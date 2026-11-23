@@ -4,8 +4,8 @@ Last updated: 2026-11-23
 
 ## Verified repository state
 - Working branch: `professor/integration`
-- Latest observed commit: `70e41fe7a837a849d89e3431d4994d530aa3bc29`
-- Latest observed CI: [run #75](https://github.com/ri5739/AndroidHarness-Professor/actions/runs/45199749781) — completed successfully.
+- Latest verified CI commit: `abb3095b637276208683d88bfbc881ef6fe1faf2`; newer policy/test commits are present but not yet CI-verified.
+- Latest verified CI: [run #89](https://github.com/ri5739/AndroidHarness-Professor/actions/runs/45216270264) — completed successfully (unit tests + debug APK).
 - CI jobs verified: JVM unit tests and debug APK build both succeeded.
 - This CI result verifies the current branch build/tests only; it does not prove real-device messaging behavior or all roadmap milestones.
 
@@ -28,7 +28,7 @@ Last updated: 2026-11-23
 - [x] Context window bounded, chronological, scope-isolated, with claimed message last.
 - [x] Retry policy and cancellation propagation.
 - [x] Orchestration unit tests.
-- [x] CI validation — latest observed run #75 passed both unit-tests and debug-apk jobs.
+- [x] CI validation — run #89 passed both unit-tests and debug-apk jobs (at commit `abb3095`; later commits require a fresh CI run).
 - [ ] Full bidirectional conversation history. Current platform notification capture supplies incoming-only messages; outgoing turns must come from a reliable, consented source before this can be implemented. Do not fabricate assistant/outgoing turns.
 - **Status:** Core review-only orchestration is implemented and CI-verified. Phase 2 is not fully complete while bidirectional history remains a requirement.
 
@@ -84,3 +84,32 @@ No platform sending is enabled yet. The current orchestrator still creates revie
 - Include conflict resolution and a no-send simulation/test mode.
 - Full requirements and delivery checklist: `AGENT_TRAINING_CHAT_SPEC.md`.
 - [ ] Training Chat UI, lesson extraction/approval, persistence, retrieval integration, management controls, tests, and device verification remain to be implemented.
+
+
+## Expanded owner-requested implementation batch (started 2026-11-23)
+Current branch head: `a452ee55920fc1781f8c73827b484bf7f8766724`.
+Latest verified CI remains run #89 at `abb3095b637276208683d88bfbc881ef6fe1faf2`; it predates the two new commits below. Do not treat the new code as CI-verified yet.
+
+### Initial domain foundation committed
+- [x] Added explicit owner-confirmed account/contact mapping model; it refuses use across mismatched platform/account/conversation scopes.
+- [x] Added deterministic sliding-window rate limiter keyed by full conversation scope.
+- [x] Added bidirectional conversation-turn record/merge contract with chronological ordering, deduplication and scope isolation. Outgoing turns must come from a reliable source; they are never fabricated from incoming notifications.
+- [x] Added fail-closed attachment classification for image/PDF/document/audio/video/unknown; it does not claim OCR/transcription/extraction until adapter capability is verified.
+- [x] Added metadata-only audit event model (message/attachment content intentionally excluded).
+- [x] Added proposed/approved Training Lesson domain state; activation is explicit and credential-like lessons are rejected.
+- [x] Added JVM tests for these domain rules.
+- [ ] Persist these new models and wire them to app UI/orchestrator.
+- [ ] Add notification permission/onboarding screen and draft management screen.
+- [ ] Implement Training Chat UI, AI lesson extraction through AndroidHarness AI Core, persistence, approval controls and retrieval.
+- [ ] Implement Smart Reply Revision Option C after verifying its exact previously agreed behavior; do not guess semantics.
+- [ ] Add real outgoing conversation history source per platform.
+- [ ] Implement actual attachment extraction/OCR/document/voice adapters only where capabilities are supported.
+- [ ] Add durable audit log, emergency pause and platform capability verification.
+- [ ] Add battery/background instrumentation, automated/instrumentation tests and real-device validation.
+- [ ] Security audit and release gates.
+
+### Commits in this batch
+- `00cb932f202a035d2714bc3d682cf7f6de69acf3` — domain policies.
+- `a452ee55920fc1781f8c73827b484bf7f8766724` — policy tests.
+
+**Important:** The two commits above have not yet been covered by a new Actions run. GitHub Actions run #89 is green for its earlier commit only. No app-level Training Chat UI, durable lesson store, draft UI, platform send adapter, OCR/voice adapter, or real-device verification is being claimed complete.
