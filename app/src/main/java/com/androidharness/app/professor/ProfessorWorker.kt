@@ -46,9 +46,10 @@ class ProfessorWorker(context: Context, params: WorkerParameters) : CoroutineWor
             val orchestrator = ProfessorOrchestrator(
                 persistence = container.professorPersistence,
                 ai = ai,
-                contextProvider = ProfessorContextProvider { _, incoming ->
-                    // Safe minimum context: the exact queued incoming message only.
-                    listOf(ProfessorConversationTurn(ProfessorTurnRole.USER, incoming.text))
+                contextProvider = ProfessorContextProvider { messageScope, incoming ->
+                    ProfessorContextWindow.build(
+                        container.professorPersistence.recentIncomingMessages(messageScope), incoming,
+                    )
                 },
                 promptProvider = ProfessorPromptProvider { messageScope, incoming ->
                     "You are Agent Professor, a private messaging reply assistant. Create a concise, natural reply draft. " +
