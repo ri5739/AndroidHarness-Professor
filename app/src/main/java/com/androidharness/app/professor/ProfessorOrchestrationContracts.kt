@@ -1,14 +1,11 @@
 package com.androidharness.app.professor
 
-/**
- * Narrow orchestration contract: processing logic can be tested without Android/Room.
- * Production persistence remains the Room-backed ProfessorPersistence implementation.
- */
+/** Narrow orchestration contract for the durable queue and draft store. */
 interface ProfessorQueueStore {
-    suspend fun claimNext(scope: ConversationScope): IncomingMessage?
-    suspend fun saveDraft(draft: ReplyDraft)
-    suspend fun complete(scope: ConversationScope, messageId: String): Boolean
-    suspend fun retry(scope: ConversationScope, messageId: String, error: String?): Boolean
+    suspend fun claimNext(scope: ConversationScope, now: Long = System.currentTimeMillis()): IncomingMessage?
+    suspend fun saveDraft(draft: ReplyDraft, now: Long = System.currentTimeMillis())
+    suspend fun complete(scope: ConversationScope, messageId: String, now: Long = System.currentTimeMillis()): Boolean
+    suspend fun retry(scope: ConversationScope, messageId: String, error: String?, now: Long = System.currentTimeMillis()): Boolean
 }
 
 fun interface ProfessorReplyGenerator {
