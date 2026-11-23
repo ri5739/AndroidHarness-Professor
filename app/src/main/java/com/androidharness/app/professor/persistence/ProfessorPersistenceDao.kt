@@ -56,6 +56,9 @@ data class ProfessorDraftEntity(@PrimaryKey val draftId:String,val platform:Stri
  @Query("SELECT * FROM professor_training_lessons WHERE lessonId=:id")
  suspend fun trainingLesson(id: String): ProfessorTrainingLessonEntity?
 
+ @Query("SELECT * FROM professor_training_lessons WHERE state='APPROVED' AND ((scopePlatform IS NULL AND accountId IS NULL AND conversationId IS NULL) OR (scopePlatform=:platform AND accountId=:accountId AND conversationId=:conversationId)) ORDER BY updatedAt DESC")
+ suspend fun approvedTrainingLessonsForScope(platform: String, accountId: String, conversationId: String): List<ProfessorTrainingLessonEntity>
+
  @Query("UPDATE professor_training_lessons SET state='APPROVED', approvedAt=:now, updatedAt=:now WHERE lessonId=:id AND state='PROPOSED'")
  suspend fun approveTrainingLesson(id: String, now: Long): Int
 
