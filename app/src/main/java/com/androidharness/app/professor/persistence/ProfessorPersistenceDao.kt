@@ -4,6 +4,19 @@ import kotlinx.coroutines.flow.Flow
 
 data class ProfessorScopeRow(val platform: String, val accountId: String, val conversationId: String)
 
+@Entity(tableName="professor_training_lessons", indices=[Index(value=["state","updatedAt"]), Index(value=["scopePlatform","accountId","conversationId"])])
+data class ProfessorTrainingLessonEntity(
+    @PrimaryKey val lessonId: String,
+    val rule: String,
+    val scopePlatform: String?,
+    val accountId: String?,
+    val conversationId: String?,
+    val state: String = "PROPOSED",
+    val createdAt: Long,
+    val updatedAt: Long,
+    val approvedAt: Long? = null,
+)
+
 @Entity(tableName="professor_incoming", primaryKeys=["platform","accountId","conversationId","messageId"], indices=[Index(value=["status","nextRetryAt","receivedAt"])])
 data class ProfessorIncomingEntity(val platform:String,val accountId:String,val conversationId:String,val messageId:String,val senderId:String,val text:String,val receivedAt:Long,val status:String="QUEUED",val attempts:Int=0,val nextRetryAt:Long=0,val lastError:String?=null,val insertedAt:Long=System.currentTimeMillis(),val updatedAt:Long=System.currentTimeMillis())
 
@@ -33,4 +46,22 @@ data class ProfessorDraftEntity(@PrimaryKey val draftId:String,val platform:Stri
  @Query("UPDATE professor_drafts SET status=:status,updatedAt=:now WHERE draftId=:id") suspend fun updateDraftStatus(id:String,status:String,now:Long):Int
  @Query("DELETE FROM professor_drafts WHERE draftId=:id") suspend fun deleteDraft(id:String)
  @Query("DELETE FROM professor_drafts WHERE platform=:p AND accountId=:a AND conversationId=:c") suspend fun clearDrafts(p:String,a:String,c:String)
+
+ @Insert(onConflict=OnConflictStrategy.ABORT)
+ suspend fun insertTrainingLesson(lesson: ProfessorTrainingLessonEntity)
+
+ @Query("SELECT * FROM professor_training_lessons ORDER BY updatedAt DESC")
+ fun trainingLessonsFlow(): Flow<List<ProfessorTrainingLessonEntity>>
+
+ @Query("SELECT * FROM professor_training_lessons WHERE lessonId=:id")
+ suspend fun trainingLesson(id: String): ProfessorTrainingLessonEntity?
+
+ @Query("UPDATE professor_training_lessons SET state='APPROVED', approvedAt=:now, updatedAt=:now WHERE lessonId=:id AND state='PROPOSED'")
+ suspend fun approveTrainingLesson(id: String, now: Long): Int
+
+ @Query("UPDATE professor_training_lessons SET state=:state, updatedAt=:now WHERE lessonId=:id AND state IN ('PROPOSED','APPROVED','PAUSED')")
+ suspend fun updateTrainingLessonState(id: String, state: String, now: Long): Int
+
+ @Query("DELETE FROM professor_training_lessons WHERE lessonId=:id")
+ suspend fun deleteTrainingLesson(id: String)
 }
