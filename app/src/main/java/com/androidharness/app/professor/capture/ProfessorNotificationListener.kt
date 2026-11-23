@@ -8,7 +8,6 @@ import com.androidharness.app.HarnessApp
 import com.androidharness.app.professor.ConversationScope
 import com.androidharness.app.professor.IncomingMessage
 import com.androidharness.app.professor.ProfessorWorkScheduler
-import java.security.MessageDigest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -34,11 +33,11 @@ class ProfessorNotificationListener : NotificationListenerService() {
             sbn.packageName, title, text, sbn.postTime
         ) ?: return
         val conversationName = captured.conversationHint?.takeIf { it.isNotBlank() } ?: "unknown"
-        val conversationId = digest(conversationName.lowercase())
+        val conversationId = ProfessorNotificationIdentity.conversationId(sbn.key, conversationName)
         // Account identity is not exposed reliably in notification metadata; keep a
         // conservative local default until the user explicitly maps an account.
-        val conversationScope = ConversationScope(platform, "default", conversationId)
-        val messageId = digest(listOf(sbn.packageName, conversationId, captured.body, sbn.postTime.toString()).joinToString("|"))
+        val conversationScope = ConversationScope(platform, ProfessorNotificationIdentity.accountScope(sbn.packageName), conversationId)
+        val messageId = ProfessorNotificationIdentity.messageId(sbn.packageName, conversationId, captured.body, sbn.postTime)
         val incoming = IncomingMessage(messageId, conversationScope, conversationName.take(256), captured.body, sbn.postTime)
         scope.launch {
             val app = applicationContext as? HarnessApp ?: return@launch
@@ -48,6 +47,4 @@ class ProfessorNotificationListener : NotificationListenerService() {
         }
     }
 
-    private fun digest(value: String): String = MessageDigest.getInstance("SHA-256")
-        .digest(value.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
 }
