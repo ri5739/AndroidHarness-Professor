@@ -856,6 +856,7 @@ interface HarnessDao {
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun dao(): HarnessDao
+    abstract fun professorPersistenceDao(): ProfessorPersistenceDao
 
     companion object {
         val MIGRATION_27_28 = object : androidx.room.migration.Migration(27, 28) {
