@@ -13,9 +13,10 @@ class ProfessorNotificationClassifierTest {
         assertEquals(MessagingPlatform.INSTAGRAM_DM, ProfessorNotificationClassifier.platformForPackage("com.instagram.android"))
     }
 
-    @Test fun rejectsUnknownPackagesAndEmptyNotifications() {
+    @Test fun rejectsUnknownPackagesEmptyNotificationsAndNegativeTimestamp() {
         assertNull(ProfessorNotificationClassifier.normalize("com.example.app", "Title", "Body", 10L))
         assertNull(ProfessorNotificationClassifier.normalize("com.whatsapp", null, null, 10L))
+        assertNull(ProfessorNotificationClassifier.normalize("com.whatsapp", "Title", "Body", -1L))
     }
 
     @Test fun trimsAndCombinesNotificationTextWithoutDuplicateTitle() {
@@ -25,6 +26,13 @@ class ProfessorNotificationClassifierTest {
         assertEquals("Alice\nHello", notification.body)
         assertEquals("Alice", notification.conversationHint)
         assertEquals(123L, notification.receivedAtEpochMillis)
+    }
+
+    @Test fun truncatesOversizedNotificationFields() {
+        val notification = ProfessorNotificationClassifier.normalize("com.whatsapp", "A".repeat(5000), "B".repeat(5000), 1L)!!
+        assertEquals(4000, notification.title?.length)
+        assertEquals(4000, notification.text?.length)
+        assertEquals(8001, notification.body.length)
     }
 
     @Test fun avoidsDuplicatingTitleWhenTextMatches() {
