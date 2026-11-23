@@ -17,6 +17,14 @@ data class ProfessorTrainingLessonEntity(
     val approvedAt: Long? = null,
 )
 
+@Entity(tableName = "professor_training_turns", indices = [Index("createdAt")])
+data class ProfessorTrainingTurnEntity(
+    @PrimaryKey val turnId: String,
+    val role: String,
+    val text: String,
+    val createdAt: Long,
+)
+
 @Entity(tableName="professor_incoming", primaryKeys=["platform","accountId","conversationId","messageId"], indices=[Index(value=["status","nextRetryAt","receivedAt"])])
 data class ProfessorIncomingEntity(val platform:String,val accountId:String,val conversationId:String,val messageId:String,val senderId:String,val text:String,val receivedAt:Long,val status:String="QUEUED",val attempts:Int=0,val nextRetryAt:Long=0,val lastError:String?=null,val insertedAt:Long=System.currentTimeMillis(),val updatedAt:Long=System.currentTimeMillis())
 
@@ -47,6 +55,15 @@ data class ProfessorDraftEntity(@PrimaryKey val draftId:String,val platform:Stri
  @Query("DELETE FROM professor_drafts WHERE draftId=:id") suspend fun deleteDraft(id:String)
  @Query("DELETE FROM professor_drafts WHERE platform=:p AND accountId=:a AND conversationId=:c") suspend fun clearDrafts(p:String,a:String,c:String)
 
+ @Insert(onConflict = OnConflictStrategy.ABORT)
+ suspend fun insertTrainingTurn(turn: ProfessorTrainingTurnEntity)
+
+ @Query("SELECT * FROM professor_training_turns ORDER BY createdAt, turnId")
+ fun trainingTurnsFlow(): Flow<List<ProfessorTrainingTurnEntity>>
+
+ @Query("DELETE FROM professor_training_turns")
+ suspend fun clearTrainingTurns()
+
  @Insert(onConflict=OnConflictStrategy.ABORT)
  suspend fun insertTrainingLesson(lesson: ProfessorTrainingLessonEntity)
 
@@ -65,6 +82,12 @@ data class ProfessorDraftEntity(@PrimaryKey val draftId:String,val platform:Stri
  @Query("UPDATE professor_training_lessons SET state=:state, updatedAt=:now WHERE lessonId=:id AND state IN ('PROPOSED','APPROVED','PAUSED')")
  suspend fun updateTrainingLessonState(id: String, state: String, now: Long): Int
 
+ @Query("UPDATE professor_training_lessons SET rule=:rule, updatedAt=:now, state='PROPOSED', approvedAt=NULL WHERE lessonId=:id")
+ suspend fun editTrainingLesson(id: String, rule: String, now: Long): Int
+
  @Query("DELETE FROM professor_training_lessons WHERE lessonId=:id")
  suspend fun deleteTrainingLesson(id: String)
+
+ @Query("DELETE FROM professor_training_lessons")
+ suspend fun clearTrainingLessons()
 }
