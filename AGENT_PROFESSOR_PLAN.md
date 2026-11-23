@@ -86,3 +86,10 @@ Implementation is underway on `professor/integration`. First committed foundatio
 Remaining work in this batch: real Training Chat UI + persistence + AndroidHarness AI Core lesson extraction; draft management and notification permission UI; Smart Reply Revision Option C (must preserve its exact agreed behavior); platform-sourced outgoing history; account/contact mapping UI and persistence; contact-memory consent UI; durable audit log/privacy/rate-limit wiring; OCR/document/voice adapters; platform capability checks; battery/background and real-device tests; security/release preparation.
 
 CI #89 is green for commit `abb3095b637276208683d88bfbc881ef6fe1faf2`. The new domain and tests commits `00cb932` and `a452ee5` are newer and still require CI verification.
+
+
+### Training Chat next implementation increment
+- Persist owner-proposed lessons in Room v29 using an explicit 28→29 migration.
+- Add repository operations for propose/approve/pause/reject/delete; proposals are inert until explicit owner approval.
+- Reject credential-like content both at proposal and approval boundaries.
+- Remaining: dedicated owner-only Training Chat UI, lesson extraction through AndroidHarness AI Core, navigation/authorization wiring, scoped application to reply generation, and end-to-end verification.
