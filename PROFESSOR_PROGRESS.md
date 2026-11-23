@@ -65,6 +65,9 @@ Last updated: 2026-11-23
 - For a mixed message, the agent may answer the ordinary portion while withholding the sensitive portion. It should say it will check with the owner before sharing that information, then continue the safe conversation naturally.
 - A sensitive incoming request does not by itself make every possible reply sensitive: a safe acknowledgement such as “I’ll confirm with the owner before sharing that” may be sent automatically if it contains no protected information.
 - Risk detection must inspect the proposed outgoing text, not only the incoming notification. Uncertain classification must fail closed for disclosure: do not reveal the information; use a safe acknowledgement and request owner approval.
+- [x] Added `ProfessorOutgoingReplyPolicy` to classify generated outgoing text for OTP/password/API-key/payment-secret, private contact, financial, and explicitly confidential details; ordinary text is marked auto-send-eligible, sensitive text requires owner approval, and a safe Bengali acknowledgement is provided.
+- [x] Integrated outgoing privacy assessment into orchestration so generated drafts containing detected private information receive `SENSITIVE_DATA`; added unit tests for ordinary, sensitive, mixed, and empty replies.
+- [ ] Still required before this policy is active end-to-end: owner approval request/response UI and persistence, safe mixed-reply regeneration/continuation, platform send adapters, and successful CI/device verification.
 - Never send passwords, OTPs, payment credentials, authentication tokens, private keys, or similarly high-risk secrets automatically, even if the sender pressures the agent.
 
 ## Current implementation boundary
