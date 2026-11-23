@@ -3,6 +3,7 @@
 Last updated: 2026-11-23
 
 ## Completed and committed on `professor/integration`
+- [x] Confirmed architecture decision: AndroidHarness remains the sole AI engine; Professor will call its existing provider/router/local/offline/fallback pipeline and will not introduce a second AI/provider stack.
 - [x] Isolated feature branch from imported upstream.
 - [x] Baseline/risk audit.
 - [x] Product implementation plan.
@@ -12,6 +13,11 @@ Last updated: 2026-11-23
 - [x] Thread-isolated in-memory queue with FIFO ordering, duplicate protection, completion tracking and pause behavior.
 - [x] Unit tests written for send gate, memory consent, account/platform scope isolation, queue FIFO, dedup, pause and clear-scope behavior.
 - [x] CI workflow for APK build + unit tests added; jobs are split so unit tests can report independently of APK/NDK setup. CI setup has been iteratively corrected; latest run status must be checked separately.
+
+## Currently in progress
+- CI unit-test job is green for run #13; debug APK build is still running. Native toolchain install now passed, so the prior missing-`glslc` blocker is cleared in this run.
+- Phase 1: trace existing AndroidHarness AI Core request entry points, provider selection/fallback, persistence, navigation, and notification hooks to identify the exact integration seams. This mapping is not complete yet.
+
 
 ## Not yet implemented/verified
 - Android notification capture service and permission onboarding.
