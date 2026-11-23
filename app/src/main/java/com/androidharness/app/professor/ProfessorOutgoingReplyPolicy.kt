@@ -17,16 +17,16 @@ data class OutgoingReplyAssessment(
 
 object ProfessorOutgoingReplyPolicy {
     private val secretPatterns = listOf(
-        Regex("""(?i)\\b(?:otp|one[- ]time password|verification code|security code)\\b.{0,48}\\b\\d{4,8}\\b"""),
-        Regex("""(?i)\\b(?:password|passcode|pin|login code|authentication token|access token|api key|private key)\\b\\s*(?:is|:|=)\\s*\\S+"""),
-        Regex("""(?i)\\b(?:cvv|cvc|card security code)\\b\\s*(?:is|:|=)?\\s*\\d{3,4}\\b""")
+        Regex("""(?i)\b(?:otp|one[- ]time password|verification code|security code)\b.{0,48}\b\d{4,8}\b"""),
+        Regex("""(?i)\b(?:password|passcode|pin|login code|authentication token|access token|api key|private key)\b\s*(?:is|:|=)\s*\S+"""),
+        Regex("""(?i)\b(?:cvv|cvc|card security code)\b\s*(?:is|:|=)?\s*\d{3,4}\b""")
     )
     private val privateDataPatterns = listOf(
-        Regex("""(?i)\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}\\b"""),
-        Regex("""(?<!\\w)(?:\\+?\\d[\\d .()\\-]{7,}\\d)(?!\\w)"""),
-        Regex("""(?i)\\b(?:bank account|account number|routing number|iban|card number)\\b\\s*(?:is|:|=)?\\s*[A-Z0-9 -]{6,}"""),
-        Regex("""(?i)\\b(?:home address|residential address|private address|date of birth|national id|nid number|passport number)\\b\\s*(?:is|:|=)?\\s*[^,;.!?]{4,}"""),
-        Regex("""(?i)\\b(?:confidential|strictly private|do not share|personal record|private document|internal only)\\b""")
+        Regex("""(?i)\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b"""),
+        Regex("""(?<!\w)(?:\+?\d[\d .()\-]{7,}\d)(?!\w)"""),
+        Regex("""(?i)\b(?:bank account|account number|routing number|iban|card number)\b\s*(?:is|:|=)?\s*[A-Z0-9 -]{6,}"""),
+        Regex("""(?i)\b(?:home address|residential address|private address|date of birth|national id|nid number|passport number)\b\s*(?:is|:|=)?\s*[^,;.!?]{4,}"""),
+        Regex("""(?i)\b(?:confidential|strictly private|do not share|personal record|private document|internal only)\b""")
     )
 
     fun assess(outgoingText: String): OutgoingReplyAssessment {
