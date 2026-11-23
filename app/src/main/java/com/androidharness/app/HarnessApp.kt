@@ -488,7 +488,11 @@ class AppContainer(val appContext: Context) {
     init {
         // Recover queue rows left PROCESSING by a previous process death before workers resume.
         kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
-            runCatching { professorPersistence.recoverInterrupted() }
+            runCatching {
+                professorPersistence.recoverInterrupted()
+                com.androidharness.app.professor.ProfessorWorkScheduler.enqueueAll(
+                    appContext, professorPersistence.pendingScopes())
+            }
         }
         runtimePolicy.start(onBackgroundDisabled = {
             runManager.stopIfBackgroundDisabled()
