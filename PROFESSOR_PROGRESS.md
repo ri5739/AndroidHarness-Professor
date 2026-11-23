@@ -15,8 +15,8 @@ Last updated: 2026-11-23
 - [x] CI workflow for APK build + unit tests added; jobs are split so unit tests can report independently of APK/NDK setup. CI setup has been iteratively corrected; latest run status must be checked separately.
 
 ## Currently in progress
-- CI unit-test job is green for run #13; debug APK build is still running. Native toolchain install now passed, so the prior missing-`glslc` blocker is cleared in this run.
-- Phase 1: trace existing AndroidHarness AI Core request entry points, provider selection/fallback, persistence, navigation, and notification hooks to identify the exact integration seams. This mapping is not complete yet.
+- CI run #14 is still in progress at the last check; its unit tests are green. Run #13 is the verified full successful build.
+- Phase 1 source mapping: initial integration seams documented in `AI_CORE_INTEGRATION_MAP.md`. Confirmed existing AgentEngine, LLM provider abstraction/HarnessProvider, fallback policy/provider, LocalModelProvider, DataStore preferences, Room-backed owner/project memory, MainActivity, and AppNav. Detailed route/wiring review remains.
 
 
 ## Not yet implemented/verified
@@ -25,7 +25,7 @@ Last updated: 2026-11-23
 - Professor orchestrator connected to AndroidHarness LLM/provider/fallback.
 - Compose control dashboard.
 - Messaging adapters and real-device tests for WhatsApp, WhatsApp Business, Messenger, Meta Business Messenger and Instagram.
-- APK build success, installation and device testing.
+- APK build success, installation and device testing (CI debug build success is verified, but installation/device tests remain).
 
 ## Important
 This branch currently contains scaffolding and test intent, not a finished messaging agent. No platform sending has been enabled.
