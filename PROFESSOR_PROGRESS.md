@@ -16,25 +16,31 @@ Last updated: 2026-11-23
 - [x] Draft save/load/flow/status/delete APIs.
 - [x] Room migration 27→28 creates Professor tables/indexes without altering existing tables.
 - [x] Professor DAO exposed from AppDatabase and repository exposed from AppContainer.
-- [ ] CI validation of the latest persistence wiring and device migration tests.
+- [x] CI runs #27–#30 passed.
+- [ ] Device migration and install testing.
 
 ## Phase 2 — AI Orchestration (in progress)
-- [x] Added review-only processor to claim scoped messages, request scope-aware context, generate via AndroidHarness AI adapter, persist review drafts and complete queue items.
-- [x] Processing failures use existing retry policy; coroutine cancellation is preserved.
-- [x] Context must end with the exact claimed incoming message to reduce scope/context mismatch risk.
-- [x] Drafts are NEEDS_REVIEW with LOW_CONFIDENCE; no calibrated confidence is available in provider stream.
+- [x] Review-only processor to claim scoped messages, request scope-aware context, generate via AndroidHarness AI adapter, persist review drafts and complete queue items.
+- [x] Processing failures use retry policy; coroutine cancellation is preserved.
+- [x] Context must end with exact claimed incoming message.
+- [x] Drafts are NEEDS_REVIEW with LOW_CONFIDENCE; provider confidence is not calibrated.
 - [ ] Inject into app lifecycle/worker and connect real context provider.
-- [ ] Add orchestration tests and validate CI.
+- [ ] Orchestration tests and CI validation.
 
-## Remaining
-- Notification capture service and permission onboarding.
+## Phase 3 — Notification Capture (started)
+- [x] Pure package classifier/notification text normalizer for supported messaging apps.
+- [x] Unit tests for supported packages, unknown packages, empty content, trimming and duplicate title.
+- [ ] Android NotificationListenerService, manifest registration, notification access onboarding.
+- [ ] Redaction/metadata handling, stable notification identity and update/dismiss lifecycle.
+- [ ] Scope/account/contact mapping and durable queue integration (must not guess identity).
+
+## Next phases
 - Persistent, per-contact memories and owner-consent workflow.
-- Compose Professor settings/dashboard (master toggle, platform/account scopes, drafts, queues, logs, emergency stop).
+- Background reliability (worker scheduling, boot recovery, permission/battery diagnostics).
 - Platform integration/capability verification for WhatsApp, WhatsApp Business, Messenger, Meta Business Messenger and Instagram DM.
 - Advanced intelligence/safety: context merging, conversation-ending detection, privacy checks, attachment/document/voice handling, rate limiting.
-- Background reliability (worker scheduling, boot recovery, permission/battery diagnostics).
+- Compose Professor settings/dashboard (postponed).
 - Physical-device verification and APK install testing.
-
 
 ## Safety baseline
 No platform sending is enabled. Orchestrator outputs review-only drafts; sending stays disabled until adapters, recipient verification, privacy/rate checks, sent-state verification and device testing are implemented and validated.
