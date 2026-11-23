@@ -25,7 +25,7 @@ Last updated: 2026-11-23
 - [x] Context must end with exact claimed incoming message.
 - [x] Drafts are NEEDS_REVIEW with LOW_CONFIDENCE; provider confidence is not calibrated.
 - [ ] Inject into app lifecycle/worker and connect real context provider.
-- [ ] Orchestration tests and CI validation.
+- [x] Introduced injectable queue/reply contracts and unit tests for successful draft generation, scope/context mismatch retry, and empty queue behavior.\n- [ ] CI validation of the new orchestration tests.
 
 ## Phase 3 — Notification Capture (started)
 - [x] Pure package classifier/notification text normalizer for supported messaging apps.
