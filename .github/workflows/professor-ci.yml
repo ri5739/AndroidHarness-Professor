@@ -57,13 +57,14 @@ jobs:
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)"
           yes | "$SDKMANAGER" --licenses || true
           "$SDKMANAGER" "ndk;27.2.12479018" "cmake;3.22.1"
-          GLSLC_DIR="$ANDROID_HOME/ndk/27.2.12479018/shader-tools"
-          if [ ! -x "$GLSLC_DIR/glslc" ]; then
-            echo "glslc missing from installed NDK shader-tools" >&2
+          sudo apt-get update
+          sudo apt-get install -y glslc
+          GLSLC="$(command -v glslc)"
+          if [ -z "$GLSLC" ]; then
+            echo "glslc package installed but compiler not found on PATH" >&2
             exit 1
           fi
-          echo "$GLSLC_DIR" >> "$GITHUB_PATH"
-          "$GLSLC_DIR/glslc" --version
+          "$GLSLC" --version
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
       - name: Build debug APK
