@@ -56,6 +56,21 @@ class ProfessorOrchestratorTest {
     }
 
 
+    @Test fun incomingRiskSignalsAreAttachedToReviewDraft() = runBlocking {
+        val risky = incoming("Urgent: verify your account at https://example.test")
+        val store = FakeStore(risky)
+        val orchestrator = ProfessorOrchestrator(
+            store, ProfessorReplyGenerator { _, _ -> "Please review" },
+            ProfessorContextProvider { _, message -> listOf(ProfessorConversationTurn(ProfessorTurnRole.USER, message.text)) },
+            ProfessorPromptProvider { _, _ -> "Prompt" },
+        )
+        val draft = orchestrator.processOne(scope)
+        assertNotNull(draft)
+        assertTrue(draft!!.riskFlags.contains(RiskFlag.PHISHING))
+        assertTrue(draft.riskFlags.contains(RiskFlag.LOW_CONFIDENCE))
+    }
+
+
     @Test fun contextMismatchDoesNotGenerateAndSchedulesRetry() = runBlocking {
         val store = FakeStore(incoming("actual"))
         var generated = false
