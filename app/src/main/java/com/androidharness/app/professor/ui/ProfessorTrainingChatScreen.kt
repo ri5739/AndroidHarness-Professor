@@ -51,8 +51,15 @@ fun ProfessorTrainingChatScreen(
     var editing by remember { mutableStateOf<ProfessorTrainingLessonEntity?>(null) }
     var editText by remember { mutableStateOf("") }
     var showReset by remember { mutableStateOf(false) }
-    val scopedConflicts = lessons.groupBy { Triple(it.scopePlatform, it.accountId, it.conversationId) }
-        .values.flatMap { group -> ProfessorTrainingConflictDetector.findConflicts(group.map { it.rule }) }
+    val scopedConflicts = lessons.filter { it.state == "APPROVED" || it.state == "PROPOSED" }
+        .groupBy { Triple(it.scopePlatform, it.accountId, it.conversationId) }
+        .values.flatMap { group ->
+            ProfessorTrainingConflictDetector.findConflicts(group.map { it.rule }).mapNotNull { conflict ->
+                val first = group.firstOrNull { it.rule == conflict.firstRule }
+                val second = group.firstOrNull { it.rule == conflict.secondRule }
+                if (first != null && second != null) first to second else null
+            }
+        }
 
     LazyColumn(
         modifier = modifier.padding(16.dp),
@@ -103,14 +110,14 @@ fun ProfessorTrainingChatScreen(
                 Text("Conflicting rules — choose which one to pause", style = MaterialTheme.typography.titleMedium)
             }
         }
-        items(scopedConflicts, key = { it.firstRule + "|" + it.secondRule }) { conflict ->
-            val first = lessons.firstOrNull { it.rule == conflict.firstRule }
-            val second = lessons.firstOrNull { it.rule == conflict.secondRule }
+        items(scopedConflicts, key = { it.first.lessonId + "|" + it.second.lessonId }) { pair ->
+            val first = pair.first
+            val second = pair.second
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("দুটি rule পরস্পর বিরোধী হতে পারে", color = MaterialTheme.colorScheme.error)
-                    Text("১. " + conflict.firstRule)
-                    Text("২. " + conflict.secondRule)
+                    Text("১. " + first.rule)
+                    Text("২. " + second.rule)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         first?.let { OutlinedButton(onClick = { second?.let { loser -> onPause(loser.lessonId) } }) { Text("Keep 1") } }
                         second?.let { OutlinedButton(onClick = { first?.let { loser -> onPause(loser.lessonId) } }) { Text("Keep 2") } }
