@@ -72,3 +72,15 @@ Last updated: 2026-11-23
 
 ## Current implementation boundary
 No platform sending is enabled yet. The current orchestrator still creates review-only drafts, and the platform-specific send adapters, owner approval workflow, outgoing-content privacy classifier, sent-state verification, and physical-device validation remain to be implemented. Do not describe automatic replies as active until those components and release gates are verified.
+
+
+## Owner-guided Training Chat — newly requested feature (2026-11-23)
+- **Status: Not implemented yet.** This requirement is now explicitly recorded in the repository so it is not lost between phases.
+- Add a dedicated in-app Training Chat where the owner teaches Agent Professor through natural conversation, examples, and corrections.
+- The agent must preview proposed lessons and require the owner's explicit confirmation before saving/activating durable rules.
+- Persist approved lessons with global/platform/account/contact scopes; strictly isolate scopes and provide inspect/edit/pause/delete/reset controls.
+- Feed only relevant active lessons into the existing Professor orchestrator via AndroidHarness AI Core. Do not create a parallel AI/provider/API-key stack.
+- Reject/redact secrets; learned rules must never override confidentiality approval, safety gates, platform capability checks, or emergency pause.
+- Include conflict resolution and a no-send simulation/test mode.
+- Full requirements and delivery checklist: `AGENT_TRAINING_CHAT_SPEC.md`.
+- [ ] Training Chat UI, lesson extraction/approval, persistence, retrieval integration, management controls, tests, and device verification remain to be implemented.
