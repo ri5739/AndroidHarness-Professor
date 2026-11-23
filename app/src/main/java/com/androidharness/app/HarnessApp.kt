@@ -16,6 +16,7 @@ import com.androidharness.app.data.ProviderRepository
 import com.androidharness.app.data.SessionRepository
 import com.androidharness.app.data.SettingsRepository
 import com.androidharness.app.data.db.AppDatabase
+import com.androidharness.app.professor.persistence.ProfessorPersistence
 import com.androidharness.app.llm.ProviderFactory
 import com.androidharness.app.llm.effectiveApiKey
 import com.androidharness.app.tools.ToolRegistry
@@ -207,6 +208,8 @@ class AppContainer(val appContext: Context) {
         // the v4→v5 path above preserves sessions and usage totals.
         .fallbackToDestructiveMigration(true)
         .build()
+    /** Phase 1 persistent message/draft store; intentionally scoped to existing Harness Room DB. */
+    val professorPersistence by lazy { ProfessorPersistence(db.professorPersistenceDao()) }
     val images = ImageStore(appContext)
     val sessions = SessionRepository(db, images)
     val memory = com.androidharness.app.data.MemoryRepository(db, settings)
