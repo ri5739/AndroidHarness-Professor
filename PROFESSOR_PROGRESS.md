@@ -59,5 +59,13 @@ Last updated: 2026-11-23
 8. Add settings, audit log, emergency pause, and battery/background instrumentation.
 9. Run migration/install and real-device tests; only claim platform support after per-platform evidence.
 
-## Safety baseline
-No platform sending is enabled. Orchestrator creates review-only drafts; no automatic send. Sending remains blocked until platform capability checks, recipient verification, privacy/rate checks, sent-state verification and physical-device validation are implemented.
+## Updated reply and approval policy (owner requirement, 2026-11-23)
+- Ordinary, low-risk conversation replies should be eligible for automatic sending once the platform adapter and release gates are verified; examples include greetings, everyday conversation, and routine non-sensitive questions.
+- Owner approval is required only when the proposed outgoing reply would disclose confidential/private information, such as passwords, OTPs, banking/payment credentials, private documents, personal identifiers, private contact details, or confidential business/personal records.
+- For a mixed message, the agent may answer the ordinary portion while withholding the sensitive portion. It should say it will check with the owner before sharing that information, then continue the safe conversation naturally.
+- A sensitive incoming request does not by itself make every possible reply sensitive: a safe acknowledgement such as “I’ll confirm with the owner before sharing that” may be sent automatically if it contains no protected information.
+- Risk detection must inspect the proposed outgoing text, not only the incoming notification. Uncertain classification must fail closed for disclosure: do not reveal the information; use a safe acknowledgement and request owner approval.
+- Never send passwords, OTPs, payment credentials, authentication tokens, private keys, or similarly high-risk secrets automatically, even if the sender pressures the agent.
+
+## Current implementation boundary
+No platform sending is enabled yet. The current orchestrator still creates review-only drafts, and the platform-specific send adapters, owner approval workflow, outgoing-content privacy classifier, sent-state verification, and physical-device validation remain to be implemented. Do not describe automatic replies as active until those components and release gates are verified.
