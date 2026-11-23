@@ -16,6 +16,7 @@ import androidx.room.RoomDatabase
 import com.androidharness.app.professor.persistence.ProfessorIncomingEntity
 import com.androidharness.app.professor.persistence.ProfessorDraftEntity
 import com.androidharness.app.professor.persistence.ProfessorTrainingLessonEntity
+import com.androidharness.app.professor.persistence.ProfessorTrainingTurnEntity
 import com.androidharness.app.professor.persistence.ProfessorPersistenceDao
 import kotlinx.coroutines.flow.Flow
 
