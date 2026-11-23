@@ -2,6 +2,8 @@ package com.androidharness.app.professor.persistence
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 
+data class ProfessorScopeRow(val platform: String, val accountId: String, val conversationId: String)
+
 @Entity(tableName="professor_incoming", primaryKeys=["platform","accountId","conversationId","messageId"], indices=[Index(value=["status","nextRetryAt","receivedAt"])])
 data class ProfessorIncomingEntity(val platform:String,val accountId:String,val conversationId:String,val messageId:String,val senderId:String,val text:String,val receivedAt:Long,val status:String="QUEUED",val attempts:Int=0,val nextRetryAt:Long=0,val lastError:String?=null,val insertedAt:Long=System.currentTimeMillis(),val updatedAt:Long=System.currentTimeMillis())
 
@@ -15,6 +17,7 @@ data class ProfessorDraftEntity(@PrimaryKey val draftId:String,val platform:Stri
  @Transaction suspend fun claimNext(p:String,a:String,c:String,now:Long):ProfessorIncomingEntity? { val row=nextDue(p,a,c,now)?:return null; if(claim(p,a,c,row.messageId,now)!=1)return null; return row.copy(status="PROCESSING",updatedAt=now) }
  @Query("SELECT attempts FROM professor_incoming WHERE platform=:p AND accountId=:a AND conversationId=:c AND messageId=:id AND status='PROCESSING'") suspend fun processingAttempts(p:String,a:String,c:String,id:String):Int?
  @Query("SELECT * FROM professor_incoming WHERE platform=:p AND accountId=:a AND conversationId=:c ORDER BY receivedAt,insertedAt") fun messagesFlow(p:String,a:String,c:String):Flow<List<ProfessorIncomingEntity>>
+ @Query("SELECT DISTINCT platform,accountId,conversationId FROM professor_incoming WHERE status IN ('QUEUED','RETRY','PROCESSING')") suspend fun pendingScopes():List<ProfessorScopeRow>
  @Query("SELECT COUNT(*) FROM professor_incoming WHERE status IN ('QUEUED','RETRY','PROCESSING')") fun pendingCount():Flow<Int>
  @Query("UPDATE professor_incoming SET status='COMPLETED',lastError=NULL,updatedAt=:now WHERE platform=:p AND accountId=:a AND conversationId=:c AND messageId=:id AND status='PROCESSING'") suspend fun complete(p:String,a:String,c:String,id:String,now:Long):Int
  @Query("UPDATE professor_incoming SET status='RETRY',attempts=attempts+1,nextRetryAt=:retryAt,lastError=:error,updatedAt=:now WHERE platform=:p AND accountId=:a AND conversationId=:c AND messageId=:id AND status='PROCESSING'") suspend fun retry(p:String,a:String,c:String,id:String,retryAt:Long,error:String?,now:Long):Int
