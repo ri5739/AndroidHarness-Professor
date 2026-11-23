@@ -23,6 +23,7 @@ class ProfessorTrainingRepository(
     suspend fun appendTrainingTurn(role: String, text: String, createdAt: Long = now()): String {
         require(role == "OWNER" || role == "ASSISTANT") { "Training Chat accepts owner and assistant turns only" }
         require(text.isNotBlank()) { "Training message cannot be blank" }
+        require(!ProfessorTrainingSecretPolicy.containsSecret(text)) { "Credential-like content cannot be stored in Training Chat history" }
         val id = newId()
         dao.insertTrainingTurn(ProfessorTrainingTurnEntity(id, role, text.trim(), createdAt))
         return id
