@@ -41,5 +41,10 @@ Audit date: 2026-11-23
 - P8: platform adapters in order of feasible testability; WhatsApp personal/Business, Messenger personal/Business, Instagram.
 - P9: automated tests, CI build, device testing; only claim a platform works after real test evidence.
 
-## Immediate next
-Audit navigation, Room/DataStore schemas, AI provider invocation, and notification/service code. Produce a dependency map before changing runtime behavior.
+## Work started on this branch
+- Added `app/src/main/java/com/androidharness/app/professor/ProfessorModels.kt`: platform scope, mode, draft states, capabilities, config validation, fail-closed send gate, memory consent policy, and dedup key.
+- Added JVM unit tests at `app/src/test/java/com/androidharness/app/professor/ProfessorPolicyTest.kt` for sensitive-memory consent, scope isolation, fail-closed defaults, successful send prerequisites, and risk blocking.
+- Added `.github/workflows/professor-ci.yml` to run debug APK build and JVM tests on branch pushes and manual dispatch. CI result is not yet available at the time of this report.
+
+## Next
+Inspect the real Room/DataStore, provider, UI navigation, and notification hooks before wiring the domain into app runtime. Build/test CI results will be used to fix any baseline/toolchain problems before broader integration.
