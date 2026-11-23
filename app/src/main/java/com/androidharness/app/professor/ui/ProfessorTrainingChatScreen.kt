@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.professor.persistence.ProfessorTrainingLessonEntity
 import com.androidharness.app.professor.persistence.ProfessorTrainingTurnEntity
+import com.androidharness.app.professor.ProfessorTrainingConflictDetector
 
 /**
  * Local owner-facing training workspace. It is deliberately not exposed through notification
@@ -50,6 +51,8 @@ fun ProfessorTrainingChatScreen(
     var editing by remember { mutableStateOf<ProfessorTrainingLessonEntity?>(null) }
     var editText by remember { mutableStateOf("") }
     var showReset by remember { mutableStateOf(false) }
+    val scopedConflicts = lessons.groupBy { Triple(it.scopePlatform, it.accountId, it.conversationId) }
+        .values.flatMap { group -> ProfessorTrainingConflictDetector.findConflicts(group.map { it.rule }) }
 
     LazyColumn(
         modifier = modifier.padding(16.dp),
@@ -92,6 +95,26 @@ fun ProfessorTrainingChatScreen(
                 Column(Modifier.padding(10.dp)) {
                     Text(if (turn.role == "OWNER") "আপনি" else "Training Assistant", style = MaterialTheme.typography.labelMedium)
                     Text(turn.text)
+                }
+            }
+        }
+        item {
+            if (scopedConflicts.isNotEmpty()) {
+                Text("Conflicting rules — choose which one to pause", style = MaterialTheme.typography.titleMedium)
+            }
+        }
+        items(scopedConflicts, key = { it.firstRule + "|" + it.secondRule }) { conflict ->
+            val first = lessons.firstOrNull { it.rule == conflict.firstRule }
+            val second = lessons.firstOrNull { it.rule == conflict.secondRule }
+            Card(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("দুটি rule পরস্পর বিরোধী হতে পারে", color = MaterialTheme.colorScheme.error)
+                    Text("১. " + conflict.firstRule)
+                    Text("২. " + conflict.secondRule)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        first?.let { OutlinedButton(onClick = { second?.let { loser -> onPause(loser.lessonId) } }) { Text("Keep 1") } }
+                        second?.let { OutlinedButton(onClick = { first?.let { loser -> onPause(loser.lessonId) } }) { Text("Keep 2") } }
+                    }
                 }
             }
         }
