@@ -486,6 +486,10 @@ class AppContainer(val appContext: Context) {
     suspend fun refreshGitHubAuth() = linuxEnv.refreshGitHub(shizuku, strict = true)
 
     init {
+        // Recover queue rows left PROCESSING by a previous process death before workers resume.
+        kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            runCatching { professorPersistence.recoverInterrupted() }
+        }
         runtimePolicy.start(onBackgroundDisabled = {
             runManager.stopIfBackgroundDisabled()
             if (!runtimePolicy.canRun()) {
