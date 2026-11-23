@@ -210,6 +210,7 @@ class AppContainer(val appContext: Context) {
         .build()
     /** Phase 1 persistent message/draft store; intentionally scoped to existing Harness Room DB. */
     val professorPersistence by lazy { ProfessorPersistence(db.professorPersistenceDao()) }
+    val professorTraining by lazy { com.androidharness.app.professor.persistence.ProfessorTrainingRepository(db.professorPersistenceDao()) }
     val images = ImageStore(appContext)
     val sessions = SessionRepository(db, images)
     val memory = com.androidharness.app.data.MemoryRepository(db, settings)
