@@ -15,6 +15,7 @@ import androidx.room.Query
 import androidx.room.RoomDatabase
 import com.androidharness.app.professor.persistence.ProfessorIncomingEntity
 import com.androidharness.app.professor.persistence.ProfessorDraftEntity
+import com.androidharness.app.professor.persistence.ProfessorTrainingLessonEntity
 import com.androidharness.app.professor.persistence.ProfessorPersistenceDao
 import kotlinx.coroutines.flow.Flow
 
@@ -850,8 +851,9 @@ interface HarnessDao {
         SavedAnswerEntity::class,
         ProfessorIncomingEntity::class,
         ProfessorDraftEntity::class,
+        ProfessorTrainingLessonEntity::class,
     ],
-    version = 28,
+    version = 29,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -859,6 +861,13 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun professorPersistenceDao(): ProfessorPersistenceDao
 
     companion object {
+        val MIGRATION_28_29 = object : androidx.room.migration.Migration(28, 29) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS professor_training_lessons (lessonId TEXT NOT NULL PRIMARY KEY, rule TEXT NOT NULL, scopePlatform TEXT, accountId TEXT, conversationId TEXT, state TEXT NOT NULL, createdAt INTEGER NOT NULL, updatedAt INTEGER NOT NULL, approvedAt INTEGER)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_professor_training_lessons_state_updatedAt ON professor_training_lessons(state, updatedAt)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_professor_training_lessons_scopePlatform_accountId_conversationId ON professor_training_lessons(scopePlatform, accountId, conversationId)")
+            }
+        }
         val MIGRATION_27_28 = object : androidx.room.migration.Migration(27, 28) {
             override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS professor_incoming (platform TEXT NOT NULL, accountId TEXT NOT NULL, conversationId TEXT NOT NULL, messageId TEXT NOT NULL, senderId TEXT NOT NULL, text TEXT NOT NULL, receivedAt INTEGER NOT NULL, status TEXT NOT NULL, attempts INTEGER NOT NULL, nextRetryAt INTEGER NOT NULL, lastError TEXT, insertedAt INTEGER NOT NULL, updatedAt INTEGER NOT NULL, PRIMARY KEY(platform, accountId, conversationId, messageId))")
