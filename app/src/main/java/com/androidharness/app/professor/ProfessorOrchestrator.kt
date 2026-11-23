@@ -2,7 +2,7 @@ package com.androidharness.app.professor
 
 import com.androidharness.app.professor.persistence.ProfessorPersistence
 import kotlinx.coroutines.CancellationException
-import java.util.UUID
+import java.security.MessageDigest
 
 fun interface ProfessorContextProvider {
     suspend fun conversation(scope: ConversationScope, incoming: IncomingMessage): List<ProfessorConversationTurn>
@@ -31,7 +31,7 @@ class ProfessorOrchestrator(
             }
             val reply = ai.generateReply(promptProvider.prompt(scope, incoming), turns)
             val draft = ReplyDraft(
-                draftId = UUID.randomUUID().toString(),
+                draftId = stableDraftId(scope, incoming.messageId),
                 scope = scope,
                 inReplyToMessageId = incoming.messageId,
                 text = reply,
@@ -55,4 +55,12 @@ class ProfessorOrchestrator(
     companion object {
         const val REVIEW_ONLY_CONFIDENCE = 0.50f
     }
+}
+
+/** Deterministic ID makes draft upserts idempotent when queue completion is retried. */
+internal fun stableDraftId(scope: ConversationScope, messageId: String): String {
+    val identity = listOf(scope.platform.name, scope.accountId, scope.conversationId, messageId)
+        .joinToString("\\u0000")
+    val digest = MessageDigest.getInstance("SHA-256").digest(identity.toByteArray(Charsets.UTF_8))
+    return "professor-" + digest.joinToString("") { "%02x".format(it) }
 }
