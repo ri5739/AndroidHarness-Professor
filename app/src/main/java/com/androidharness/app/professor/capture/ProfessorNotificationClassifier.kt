@@ -35,9 +35,11 @@ object ProfessorNotificationClassifier {
         text: CharSequence?,
         timestamp: Long,
     ): CapturedNotification? {
-        if (platformForPackage(packageName) == null) return null
-        val cleanTitle = title?.toString()?.trim()?.takeIf { it.isNotEmpty() }
-        val cleanText = text?.toString()?.trim()?.takeIf { it.isNotEmpty() }
+        if (platformForPackage(packageName) == null || timestamp < 0L) return null
+        // Notification payloads are untrusted and may be unexpectedly huge. Bound each
+        // field before persisting or passing it to context assembly.
+        val cleanTitle = title?.toString()?.trim()?.take(4000)?.takeIf { it.isNotEmpty() }
+        val cleanText = text?.toString()?.trim()?.take(4000)?.takeIf { it.isNotEmpty() }
         if (cleanTitle == null && cleanText == null) return null
         return CapturedNotification(
             packageName = packageName,
