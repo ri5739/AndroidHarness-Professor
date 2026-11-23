@@ -124,3 +124,12 @@ Latest verified CI remains run #89 at `abb3095b637276208683d88bfbc881ef6fe1faf2`
 - [ ] Training Chat remains incomplete: no screen, lesson extraction, durable lesson store, or orchestration retrieval yet.
 - [ ] Smart Reply Revision Option C is blocked pending retrieval of its exact agreed behavior; no semantics have been guessed.
 - Latest UI component commit: `870ef6bff5b02ad083448c5c5251cc02521f2aaa`. No CI verification for this commit is recorded yet.
+
+
+## Training Chat implementation — durable lesson store foundation
+- Added Room v29 table `professor_training_lessons` with global/contact scope columns, proposal state, timestamps, and indexes.
+- Added explicit migration 28→29; existing app data is preserved.
+- Added DAO operations and `ProfessorTrainingRepository` for proposal, owner approval, pause, reject, delete, and scoped lesson resolution.
+- Credential-like rules are rejected both when proposed and immediately before approval. New lessons remain `PROPOSED`; there is no implicit activation.
+- Exposed the repository from `AppContainer`.
+- This is a persistence/domain foundation only. A dedicated Training Chat screen, AndroidHarness AI Core lesson extraction, owner-only navigation/authorization, and end-to-end tests remain pending. No external sender can write lessons through this repository API.
