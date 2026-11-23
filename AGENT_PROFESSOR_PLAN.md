@@ -51,3 +51,12 @@ Adapters must report capabilities rather than assume all platforms behave alike:
 - Instrumentation tests for permission/setup and UI.
 - CI debug APK build; actual-device testing of each enabled adapter.
 - No auto-send default until safety tests pass and owner explicitly enables it.
+
+## Selective owner-approval policy (updated 2026-11-23)
+- Routine, low-risk replies (greetings, everyday conversation, and ordinary non-sensitive answers) are intended to send automatically after the relevant platform adapter passes its release checks.
+- Ask the owner before disclosing confidential/private information: passwords, OTPs, authentication tokens, payment/banking credentials, private documents, personal identifiers, private contact details, and confidential personal/business records.
+- Evaluate the proposed outgoing reply. A sensitive request from the other person does not automatically prohibit a safe acknowledgement; the agent can say it will confirm with the owner before sharing the protected information and continue with unrelated ordinary conversation.
+- In mixed replies, send only the safe ordinary portion; hold back the sensitive portion pending owner approval.
+- If classification is uncertain, do not disclose the potentially sensitive content. Use a safe acknowledgement and request owner approval.
+- Never automatically disclose high-risk secrets (passwords, OTPs, payment credentials, authentication tokens, private keys), regardless of confidence or urgency.
+- This is the target policy, not a claim that automatic sending is currently implemented. The current orchestrator remains review-only until outgoing-content classification, approval UX, platform send adapters, recipient/sent-state verification, rate limits, and device tests are complete.
