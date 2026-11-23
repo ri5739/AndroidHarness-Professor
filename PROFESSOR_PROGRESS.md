@@ -113,3 +113,14 @@ Latest verified CI remains run #89 at `abb3095b637276208683d88bfbc881ef6fe1faf2`
 - `a452ee55920fc1781f8c73827b484bf7f8766724` — policy tests.
 
 **Important:** The two commits above have not yet been covered by a new Actions run. GitHub Actions run #89 is green for its earlier commit only. No app-level Training Chat UI, durable lesson store, draft UI, platform send adapter, OCR/voice adapter, or real-device verification is being claimed complete.
+
+
+## Next implementation continuation — 2026-11-23
+- [x] Added Compose review-only draft inbox component with edit, mark-reviewed and delete callbacks. It deliberately exposes no send action.
+- [x] Added a notification-access permission/status panel component; the host screen must still provide the live Android permission state and request/settings callback.
+- [ ] These are UI components only, not yet routed into the app navigation or bound to durable persistence. Do not call either feature fully integrated.
+- [ ] Wire draft inbox to `ProfessorPersistence.activeDraftsFlow()`, save edits, status transitions, and deletion; add navigation and owner-facing entry point.
+- [ ] Wire notification panel to NotificationListenerService enabled-state checks and Android notification permission where applicable; handle API-level differences and return-from-settings refresh.
+- [ ] Training Chat remains incomplete: no screen, lesson extraction, durable lesson store, or orchestration retrieval yet.
+- [ ] Smart Reply Revision Option C is blocked pending retrieval of its exact agreed behavior; no semantics have been guessed.
+- Latest UI component commit: `870ef6bff5b02ad083448c5c5251cc02521f2aaa`. No CI verification for this commit is recorded yet.
