@@ -36,7 +36,7 @@ class ProfessorOrchestrator(
                 inReplyToMessageId = incoming.messageId,
                 text = reply,
                 status = DraftStatus.NEEDS_REVIEW,
-                riskFlags = setOf(RiskFlag.LOW_CONFIDENCE),
+                riskFlags = setOf(RiskFlag.LOW_CONFIDENCE) + com.androidharness.app.professor.capture.ProfessorNotificationRiskClassifier.classify(incoming.text),
                 confidence = REVIEW_ONLY_CONFIDENCE,
             )
             persistence.saveDraft(draft)
