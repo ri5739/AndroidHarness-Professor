@@ -988,6 +988,34 @@ fun AppNav(container: AppContainer) {
                     nav.navigate("settings") { popUpTo("my-ai") { inclusive = true }; launchSingleTop = true }
                 }
             }
+
+            composable("professor-training") {
+                val trainingHistory by container.professorTraining.conversationHistory()
+                    .collectAsStateWithLifecycle(initialValue = emptyList())
+                val trainingLessons by container.professorTraining.lessons()
+                    .collectAsStateWithLifecycle(initialValue = emptyList())
+                com.androidharness.app.professor.ui.ProfessorTrainingChatScreen(
+                    history = trainingHistory,
+                    lessons = trainingLessons,
+                    aiCoreReady = false,
+                    onTeach = { message ->
+                        android.widget.Toast.makeText(uiContext, "AI Core training connection is not wired yet.", android.widget.Toast.LENGTH_LONG).show()
+                    },
+                    onApprove = { id -> scope.launch { runCatching { container.professorTraining.approve(id) }.onFailure {
+                        android.widget.Toast.makeText(uiContext, it.message ?: "Approval failed", android.widget.Toast.LENGTH_LONG).show()
+                    } } },
+                    onEdit = { id, rule -> scope.launch { runCatching { container.professorTraining.edit(id, rule) }.onFailure {
+                        android.widget.Toast.makeText(uiContext, it.message ?: "Edit failed", android.widget.Toast.LENGTH_LONG).show()
+                    } } },
+                    onPause = { id -> scope.launch { container.professorTraining.pause(id) } },
+                    onDelete = { id -> scope.launch { container.professorTraining.delete(id) } },
+                    onReset = { scope.launch { container.professorTraining.resetAllLessons() } },
+                    onSimulate = { _, _ ->
+                        android.widget.Toast.makeText(uiContext, "No-send simulation awaits the AI Core runtime bridge.", android.widget.Toast.LENGTH_LONG).show()
+                    },
+                    simulationPreview = null,
+                )
+            }
             composable("settings") {
                 SettingsScreen(
                     container = container,
@@ -996,6 +1024,7 @@ fun AppNav(container: AppContainer) {
                     onRunSetup = { nav.navigate("setup") },
                     onOpenSkills = { nav.navigate("skills") },
                     onOpenProviders = { nav.navigate("providers") },
+                    onOpenTrainingChat = { nav.navigate("professor-training") { launchSingleTop = true } },
                     onOpenLearnDestination = { destination ->
                         when (destination) {
                             com.androidharness.app.ui.learn.LearnDestination.CHAT -> openChat(null, kind = com.androidharness.app.data.ConversationKind.CHAT)
