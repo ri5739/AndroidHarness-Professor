@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.first
 /**
  * Processes a scoped durable queue using the provider/model currently selected in AndroidHarness.
  * Notification capture currently supplies only the incoming turn; richer history requires
- * the Phase 3 capture and conversation identity integration.
+ * reliable bidirectional conversation capture.
  */
 class ProfessorWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
@@ -58,19 +58,29 @@ class ProfessorWorker(context: Context, params: WorkerParameters) : CoroutineWor
                         "Platform: ${messageScope.platform.name}. Incoming message:\n${incoming.text}"
                 },
             )
-            // Drain only a bounded number per run. Unique work keeps this conversation serial.
+
+            // Drain only a bounded number per run. If a transient error schedules a retry,
+            // or the bound is reached while work remains, keep the unique work chain alive.
             repeat(MAX_MESSAGES_PER_RUN) {
                 if (isStopped) return Result.success()
-                val draft = orchestrator.processOne(scope) ?: return Result.success()
+                val draft = orchestrator.processOne(scope)
+                if (draft == null) {
+                    return if (hasPendingMessages(container, scope)) Result.retry() else Result.success()
+                }
                 if (draft.text.isBlank()) return Result.retry()
             }
-            return Result.success()
+            return if (hasPendingMessages(container, scope)) Result.retry() else Result.success()
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (_: Exception) {
             return Result.retry()
         }
     }
+
+    private suspend fun hasPendingMessages(
+        container: com.androidharness.app.AppContainer,
+        scope: ConversationScope,
+    ): Boolean = container.professorPersistence.incomingFlow(scope).first().isNotEmpty()
 
     companion object {
         const val KEY_PLATFORM = "professor_platform"
