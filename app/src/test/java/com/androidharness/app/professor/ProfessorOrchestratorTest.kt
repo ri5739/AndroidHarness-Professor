@@ -12,17 +12,17 @@ class ProfessorOrchestratorTest {
         val drafts = mutableListOf<ReplyDraft>()
         val completed = mutableListOf<String>()
         val retries = mutableListOf<Pair<String, String?>>()
-        override suspend fun claimNext(scope: ConversationScope): IncomingMessage? {
+        override suspend fun claimNext(scope: ConversationScope, now: Long): IncomingMessage? {
             val item = next?.takeIf { it.scope == scope }
             if (item != null) next = null
             return item
         }
-        override suspend fun saveDraft(draft: ReplyDraft) { drafts += draft }
-        override suspend fun complete(scope: ConversationScope, messageId: String): Boolean {
+        override suspend fun saveDraft(draft: ReplyDraft, now: Long) { drafts += draft }
+        override suspend fun complete(scope: ConversationScope, messageId: String, now: Long): Boolean {
             completed += messageId
             return true
         }
-        override suspend fun retry(scope: ConversationScope, messageId: String, error: String?): Boolean {
+        override suspend fun retry(scope: ConversationScope, messageId: String, error: String?, now: Long): Boolean {
             retries += messageId to error
             return true
         }
