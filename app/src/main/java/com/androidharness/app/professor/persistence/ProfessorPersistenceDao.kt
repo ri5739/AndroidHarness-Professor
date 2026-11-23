@@ -1,0 +1,32 @@
+package com.androidharness.app.professor.persistence
+import androidx.room.*
+import kotlinx.coroutines.flow.Flow
+
+@Entity(tableName="professor_incoming", primaryKeys=["platform","accountId","conversationId","messageId"], indices=[Index(value=["status","nextRetryAt","receivedAt"])])
+data class ProfessorIncomingEntity(val platform:String,val accountId:String,val conversationId:String,val messageId:String,val senderId:String,val text:String,val receivedAt:Long,val status:String="QUEUED",val attempts:Int=0,val nextRetryAt:Long=0,val lastError:String?=null,val insertedAt:Long=System.currentTimeMillis(),val updatedAt:Long=System.currentTimeMillis())
+
+@Entity(tableName="professor_drafts",indices=[Index(value=["platform","accountId","conversationId","updatedAt"])])
+data class ProfessorDraftEntity(@PrimaryKey val draftId:String,val platform:String,val accountId:String,val conversationId:String,val inReplyToMessageId:String,val text:String,val status:String="PENDING",val riskFlagsJson:String="[]",val confidence:Float=0f,val createdAt:Long=System.currentTimeMillis(),val updatedAt:Long=System.currentTimeMillis())
+
+@Dao interface ProfessorPersistenceDao {
+ @Insert(onConflict=OnConflictStrategy.IGNORE) suspend fun enqueue(message:ProfessorIncomingEntity):Long
+ @Query("SELECT * FROM professor_incoming WHERE platform=:p AND accountId=:a AND conversationId=:c AND status IN ('QUEUED','RETRY') AND nextRetryAt<=:now ORDER BY receivedAt,insertedAt LIMIT 1") suspend fun nextDue(p:String,a:String,c:String,now:Long):ProfessorIncomingEntity?
+ @Query("UPDATE professor_incoming SET status='PROCESSING',updatedAt=:now WHERE platform=:p AND accountId=:a AND conversationId=:c AND messageId=:id AND status IN ('QUEUED','RETRY') AND nextRetryAt<=:now") suspend fun claim(p:String,a:String,c:String,id:String,now:Long):Int
+ @Transaction suspend fun claimNext(p:String,a:String,c:String,now:Long):ProfessorIncomingEntity? { val row=nextDue(p,a,c,now)?:return null; if(claim(p,a,c,row.messageId,now)!=1)return null; return row.copy(status="PROCESSING",updatedAt=now) }
+ @Query("SELECT attempts FROM professor_incoming WHERE platform=:p AND accountId=:a AND conversationId=:c AND messageId=:id AND status='PROCESSING'") suspend fun processingAttempts(p:String,a:String,c:String,id:String):Int?
+ @Query("SELECT * FROM professor_incoming WHERE platform=:p AND accountId=:a AND conversationId=:c ORDER BY receivedAt,insertedAt") fun messagesFlow(p:String,a:String,c:String):Flow<List<ProfessorIncomingEntity>>
+ @Query("SELECT COUNT(*) FROM professor_incoming WHERE status IN ('QUEUED','RETRY','PROCESSING')") fun pendingCount():Flow<Int>
+ @Query("UPDATE professor_incoming SET status='COMPLETED',lastError=NULL,updatedAt=:now WHERE platform=:p AND accountId=:a AND conversationId=:c AND messageId=:id AND status='PROCESSING'") suspend fun complete(p:String,a:String,c:String,id:String,now:Long):Int
+ @Query("UPDATE professor_incoming SET status='RETRY',attempts=attempts+1,nextRetryAt=:retryAt,lastError=:error,updatedAt=:now WHERE platform=:p AND accountId=:a AND conversationId=:c AND messageId=:id AND status='PROCESSING'") suspend fun retry(p:String,a:String,c:String,id:String,retryAt:Long,error:String?,now:Long):Int
+ @Query("UPDATE professor_incoming SET status='FAILED',attempts=attempts+1,lastError=:error,updatedAt=:now WHERE platform=:p AND accountId=:a AND conversationId=:c AND messageId=:id AND status='PROCESSING'") suspend fun fail(p:String,a:String,c:String,id:String,error:String?,now:Long):Int
+ @Query("UPDATE professor_incoming SET status='QUEUED',nextRetryAt=0,updatedAt=:now WHERE status='PROCESSING'") suspend fun recover(now:Long):Int
+ @Query("UPDATE professor_incoming SET status='CANCELLED',updatedAt=:now WHERE platform=:p AND accountId=:a AND conversationId=:c AND status IN ('QUEUED','RETRY')") suspend fun cancel(p:String,a:String,c:String,now:Long):Int
+ @Query("DELETE FROM professor_incoming WHERE platform=:p AND accountId=:a AND conversationId=:c") suspend fun clearIncoming(p:String,a:String,c:String)
+ @Insert(onConflict=OnConflictStrategy.REPLACE) suspend fun upsertDraft(draft:ProfessorDraftEntity)
+ @Query("SELECT * FROM professor_drafts WHERE draftId=:id") suspend fun getDraft(id:String):ProfessorDraftEntity?
+ @Query("SELECT * FROM professor_drafts WHERE platform=:p AND accountId=:a AND conversationId=:c ORDER BY updatedAt DESC") fun draftsFlow(p:String,a:String,c:String):Flow<List<ProfessorDraftEntity>>
+ @Query("SELECT * FROM professor_drafts WHERE status IN ('PENDING','READY','NEEDS_REVIEW') ORDER BY updatedAt DESC") fun activeDrafts():Flow<List<ProfessorDraftEntity>>
+ @Query("UPDATE professor_drafts SET status=:status,updatedAt=:now WHERE draftId=:id") suspend fun updateDraftStatus(id:String,status:String,now:Long):Int
+ @Query("DELETE FROM professor_drafts WHERE draftId=:id") suspend fun deleteDraft(id:String)
+ @Query("DELETE FROM professor_drafts WHERE platform=:p AND accountId=:a AND conversationId=:c") suspend fun clearDrafts(p:String,a:String,c:String)
+}
