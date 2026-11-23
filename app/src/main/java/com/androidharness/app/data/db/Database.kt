@@ -852,8 +852,9 @@ interface HarnessDao {
         ProfessorIncomingEntity::class,
         ProfessorDraftEntity::class,
         ProfessorTrainingLessonEntity::class,
+        ProfessorTrainingTurnEntity::class,
     ],
-    version = 29,
+    version = 30,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -861,6 +862,12 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun professorPersistenceDao(): ProfessorPersistenceDao
 
     companion object {
+        val MIGRATION_29_30 = object : androidx.room.migration.Migration(29, 30) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS professor_training_turns (turnId TEXT NOT NULL PRIMARY KEY, role TEXT NOT NULL, text TEXT NOT NULL, createdAt INTEGER NOT NULL)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_professor_training_turns_createdAt ON professor_training_turns(createdAt)")
+            }
+        }
         val MIGRATION_28_29 = object : androidx.room.migration.Migration(28, 29) {
             override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS professor_training_lessons (lessonId TEXT NOT NULL PRIMARY KEY, rule TEXT NOT NULL, scopePlatform TEXT, accountId TEXT, conversationId TEXT, state TEXT NOT NULL, createdAt INTEGER NOT NULL, updatedAt INTEGER NOT NULL, approvedAt INTEGER)")
