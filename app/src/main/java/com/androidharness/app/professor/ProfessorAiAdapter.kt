@@ -20,8 +20,8 @@ class ProfessorAiAdapter(
     private val providerConfig: ProviderConfig,
     private val apiKey: String,
     private val requestOptions: RequestOptions = RequestOptions(maxOutputTokens = 1024),
-) {
-    suspend fun generateReply(
+) : ProfessorReplyGenerator {
+    override suspend fun generateReply(
         systemPrompt: String,
         conversation: List<ProfessorConversationTurn>,
     ): String {
