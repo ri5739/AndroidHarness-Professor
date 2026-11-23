@@ -18,6 +18,14 @@ class ProfessorTrainingRepository(
 ) {
     fun lessons(): Flow<List<ProfessorTrainingLessonEntity>> = dao.trainingLessonsFlow()
 
+    /** Returns only approved owner rules that are global or match the exact conversation scope. */
+    suspend fun approvedLessonsFor(scope: ConversationScope): List<ProfessorTrainingLessonEntity> =
+        dao.approvedTrainingLessonsForScope(
+            platform = scope.platform.name,
+            accountId = scope.accountId,
+            conversationId = scope.conversationId,
+        ).filterNot { ProfessorTrainingSecretPolicy.containsSecret(it.rule) }
+
     suspend fun propose(rule: String, scope: ConversationScope? = null): String {
         require(rule.isNotBlank()) { "Training rule cannot be blank" }
         require(!ProfessorTrainingSecretPolicy.containsSecret(rule)) {
