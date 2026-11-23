@@ -18,6 +18,28 @@ class ProfessorTrainingRepository(
 ) {
     fun lessons(): Flow<List<ProfessorTrainingLessonEntity>> = dao.trainingLessonsFlow()
 
+    fun conversationHistory(): Flow<List<ProfessorTrainingTurnEntity>> = dao.trainingTurnsFlow()
+
+    suspend fun appendTrainingTurn(role: String, text: String, createdAt: Long = now()): String {
+        require(role == "OWNER" || role == "ASSISTANT") { "Training Chat accepts owner and assistant turns only" }
+        require(text.isNotBlank()) { "Training message cannot be blank" }
+        val id = newId()
+        dao.insertTrainingTurn(ProfessorTrainingTurnEntity(id, role, text.trim(), createdAt))
+        return id
+    }
+
+    suspend fun clearTrainingHistory() = dao.clearTrainingTurns()
+
+    suspend fun edit(lessonId: String, rule: String): Boolean {
+        require(rule.isNotBlank()) { "Training rule cannot be blank" }
+        require(!ProfessorTrainingSecretPolicy.containsSecret(rule)) { "Credential-like content cannot be stored as a lesson" }
+        val current = dao.trainingLesson(lessonId) ?: return false
+        if (current.state == ProfessorTrainingLessonState.REJECTED.name) return false
+        return dao.editTrainingLesson(lessonId, rule.trim(), now()) == 1
+    }
+
+    suspend fun resetAllLessons() = dao.clearTrainingLessons()
+
     /** Returns only approved owner rules that are global or match the exact conversation scope. */
     suspend fun approvedLessonsFor(scope: ConversationScope): List<ProfessorTrainingLessonEntity> =
         dao.approvedTrainingLessonsForScope(
