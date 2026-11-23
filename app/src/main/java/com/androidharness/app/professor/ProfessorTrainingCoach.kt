@@ -12,6 +12,11 @@ class ProfessorTrainingCoach(
 ) {
     suspend fun teach(ownerMessage: String, scope: ConversationScope? = null): TrainingCoachResult {
         require(ownerMessage.isNotBlank()) { "Training message cannot be blank" }
+        if (ProfessorTrainingSecretPolicy.containsSecret(ownerMessage)) {
+            val safeResponse = "গোপন credential বা authentication তথ্য Training Chat-এ সংরক্ষণ করা যাবে না। অনুগ্রহ করে secret ছাড়া নিয়মটি আবার লিখুন।"
+            repository.appendTrainingTurn("ASSISTANT", safeResponse)
+            return TrainingCoachResult(answer = safeResponse, rejectedReason = "Secret-like input rejected before history persistence")
+        }
         repository.appendTrainingTurn("OWNER", ownerMessage)
         val prompt = """
             You are the owner's private Agent Professor training assistant.
