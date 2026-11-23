@@ -11,7 +11,7 @@ Last updated: 2026-11-23
 - [x] Sensitive-memory consent policy; ordinary memory and sensitive memory have different save rules.
 - [x] Thread-isolated in-memory queue with FIFO ordering, duplicate protection, completion tracking and pause behavior.
 - [x] Unit tests written for send gate, memory consent, account/platform scope isolation, queue FIFO, dedup, pause and clear-scope behavior.
-- [x] CI workflow for APK build + unit tests added. CI setup has been iteratively corrected; latest run status must be checked separately.
+- [x] CI workflow for APK build + unit tests added; jobs are split so unit tests can report independently of APK/NDK setup. CI setup has been iteratively corrected; latest run status must be checked separately.
 
 ## Not yet implemented/verified
 - Android notification capture service and permission onboarding.
