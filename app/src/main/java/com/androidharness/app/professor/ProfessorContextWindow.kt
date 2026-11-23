@@ -18,7 +18,8 @@ object ProfessorContextWindow {
             .filter { it.scope == current.scope && it.messageId != current.messageId }
             .distinctBy { it.messageId }
             .sortedWith(compareBy<IncomingMessage> { it.receivedAtEpochMillis }.thenBy { it.messageId })
-            .take((maxTurns - 1).coerceAtLeast(0))
+            .toList()
+            .takeLast((maxTurns - 1).coerceAtLeast(0))
             .map { ProfessorConversationTurn(ProfessorTurnRole.USER, it.text) }
             .toList()
         return (scoped + ProfessorConversationTurn(ProfessorTurnRole.USER, current.text)).takeLast(maxTurns)
