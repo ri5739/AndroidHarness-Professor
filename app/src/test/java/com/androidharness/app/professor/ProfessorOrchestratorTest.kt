@@ -47,6 +47,15 @@ class ProfessorOrchestratorTest {
         assertTrue(store.retries.isEmpty())
     }
 
+    @Test fun draftIdIsStableForSameMessageAndScopedAcrossContacts() {
+        val same = stableDraftId(scope, "m1")
+        assertEquals(same, stableDraftId(scope, "m1"))
+        assertNotEquals(same, stableDraftId(scope.copy(conversationId = "other"), "m1"))
+        assertNotEquals(same, stableDraftId(scope.copy(accountId = "other-account"), "m1"))
+        assertNotEquals(same, stableDraftId(scope.copy(platform = MessagingPlatform.INSTAGRAM_DM), "m1"))
+    }
+
+
     @Test fun contextMismatchDoesNotGenerateAndSchedulesRetry() = runBlocking {
         val store = FakeStore(incoming("actual"))
         var generated = false
