@@ -34,7 +34,7 @@ jobs:
             cp README.md PROJECT_ROADMAP.md
           fi
           cp .github/workflows/import-upstream.yml /tmp/import-upstream.yml
-          rsync -a --delete --exclude='.git' --exclude='.github/workflows/import-upstream.yml' ../upstream/ ./
+          rsync -a --delete --exclude='.git' --exclude='.github/workflows/**' ../upstream/ ./
           mkdir -p .github/workflows
           cp /tmp/import-upstream.yml .github/workflows/import-upstream.yml
           echo "Upstream files: $(find ../upstream -type f | wc -l)"
