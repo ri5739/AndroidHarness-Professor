@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="steering_group">"Pendant que l\'agent travaille"</string>
+    <string name="settings_anchor_steering">"Messages envoyés en cours de tâche"</string>
+    <string name="steering_mode_auto">"AH Auto"</string>
+    <string name="steering_mode_auto_desc">"L\'agent lit votre message après son étape en cours et continue. Les outils en cours d\'exécution ne sont jamais interrompus. Si la tâche est déjà terminée, le message démarre le tour suivant."</string>
+    <string name="steering_mode_after_task">"Après la tâche"</string>
+    <string name="steering_mode_after_task_desc">"Votre message attend la fin de la tâche entière, puis commence un nouveau tour."</string>
+    <string name="steering_picker_detail">"Choisissez ce qui se passe lorsque vous envoyez un message pendant que l\'agent travaille. Envoyer maintenant sur un message en file d\'attente arrête toujours l\'agent et l\'envoie immédiatement."</string>
+    <string name="steering_search_desc">"Dirigez l\'agent en cours d\'exécution ou attendez que la tâche soit terminée"</string>
+    <string name="steering_queue_next_step">"L\'agent les lit après son étape en cours."</string>
+    <string name="steering_queue_badge">"Lire à l\'étape suivante"</string>
+    <string name="steering_send_menu_label">"Choisir quand envoyer"</string>
+    <string name="steering_send_steer">"Orienter après cette étape"</string>
+    <string name="steering_send_steer_desc">"Lu après le message ou l\'appel d\'outil en cours"</string>
+    <string name="steering_send_after">"Envoyer après la tâche"</string>
+    <string name="steering_send_after_desc">"Attend la fin de toute la tâche"</string>
+</resources>

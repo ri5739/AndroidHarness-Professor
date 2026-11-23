@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="code_explore_read">
+        <item quantity="one">%1$d dosya okundu</item>
+        <item quantity="other">%1$d dosya okundu</item>
+    </plurals>
+    <plurals name="code_explore_search">
+        <item quantity="one">%1$d kez arandı</item>
+        <item quantity="other">%1$d kez arandı</item>
+    </plurals>
+    <plurals name="code_explore_list">
+        <item quantity="one">%1$d klasör listelendi</item>
+        <item quantity="other">%1$d klasör listelendi</item>
+    </plurals>
+    <plurals name="code_explore_web">
+        <item quantity="one">%1$d web kaynağı kontrol edildi</item>
+        <item quantity="other">%1$d web kaynağı kontrol edildi</item>
+    </plurals>
+    <plurals name="code_explore_memory">
+        <item quantity="one">%1$d anı geri çağrıldı</item>
+        <item quantity="other">%1$d anı geri çağrıldı</item>
+    </plurals>
+    <plurals name="code_explore_other">
+        <item quantity="one">%1$d kontrol çalıştırıldı</item>
+        <item quantity="other">%1$d kontrol çalıştırıldı</item>
+    </plurals>
+    <plurals name="code_explore_failed">
+        <item quantity="one">%1$d başarısız</item>
+        <item quantity="other">%1$d başarısız</item>
+    </plurals>
+    <string name="code_explore_exploring">Keşfediyor</string>
+    <string name="code_live_writing_line">%1$d. satır yazılıyor</string>
+    <string name="code_live_editing_lines">%1$d satır yeniden yazılıyor</string>
+    <string name="code_live_waiting_for_code">Kod bekleniyor</string>
+    <string name="code_cache_catalog_price">Bazı istekler modelin katalog liste fiyatını kullanır. Sağlayıcınız farklı ücret alabilir.</string>
+    <string name="context_tab_limits">Sınırlar</string>
+    <string name="context_free_tokens">%1$s boş</string>
+    <string name="context_used">kullanıldı</string>
+    <string name="context_cache_hit_rate_short">Önbellek isabet oranı</string>
+    <string name="context_requests_short">İstekler</string>
+    <string name="context_limit_used">%2$s içinden %1$s kullanıldı</string>
+    <plurals name="browser_steps_open">
+        <item quantity="one">%1$d sayfa açıldı</item>
+        <item quantity="other">%1$d sayfa açıldı</item>
+    </plurals>
+    <plurals name="browser_steps_click">
+        <item quantity="one">%1$d kez tıklandı</item>
+        <item quantity="other">%1$d kez tıklandı</item>
+    </plurals>
+    <plurals name="browser_steps_type">
+        <item quantity="one">%1$d kez yazıldı</item>
+        <item quantity="other">%1$d kez yazıldı</item>
+    </plurals>
+    <plurals name="browser_steps_screenshot">
+        <item quantity="one">%1$d ekran görüntüsü alındı</item>
+        <item quantity="other">%1$d ekran görüntüsü alındı</item>
+    </plurals>
+    <plurals name="browser_steps_read">
+        <item quantity="one">sayfa %1$d kez okundu</item>
+        <item quantity="other">sayfa %1$d kez okundu</item>
+    </plurals>
+    <plurals name="browser_steps_other">
+        <item quantity="one">%1$d diğer adım</item>
+        <item quantity="other">%1$d diğer adım</item>
+    </plurals>
+    <string name="browser_steps_using">Tarayıcı kullanılıyor</string>
+</resources>

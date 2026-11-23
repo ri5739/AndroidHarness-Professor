@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="code_explore_read">
+        <item quantity="one">read %1$d file</item>
+        <item quantity="other">read %1$d files</item>
+    </plurals>
+    <plurals name="code_explore_search">
+        <item quantity="one">searched %1$d time</item>
+        <item quantity="other">searched %1$d times</item>
+    </plurals>
+    <plurals name="code_explore_list">
+        <item quantity="one">listed %1$d folder</item>
+        <item quantity="other">listed %1$d folders</item>
+    </plurals>
+    <plurals name="code_explore_web">
+        <item quantity="one">checked %1$d web source</item>
+        <item quantity="other">checked %1$d web sources</item>
+    </plurals>
+    <plurals name="code_explore_memory">
+        <item quantity="one">recalled %1$d memory</item>
+        <item quantity="other">recalled %1$d memories</item>
+    </plurals>
+    <plurals name="code_explore_other">
+        <item quantity="one">ran %1$d check</item>
+        <item quantity="other">ran %1$d checks</item>
+    </plurals>
+    <plurals name="code_explore_failed">
+        <item quantity="one">%1$d failed</item>
+        <item quantity="other">%1$d failed</item>
+    </plurals>
+    <string name="code_explore_exploring">Exploring</string>
+    <string name="code_live_writing_line">Writing line %1$d</string>
+    <string name="code_live_editing_lines">Rewriting %1$d lines</string>
+    <string name="code_live_waiting_for_code">Waiting for code</string>
+    <string name="context_tab_limits">Limits</string>
+    <string name="context_free_tokens">%1$s free</string>
+    <string name="context_used">used</string>
+    <string name="context_cache_hit_rate_short">Cache hit rate</string>
+    <string name="context_requests_short">Requests</string>
+    <string name="context_limit_used">%1$s of %2$s used</string>
+    <string name="code_cache_catalog_price">Some requests use the model\'s catalog list price. Your provider may charge differently.</string>
+    <plurals name="browser_steps_open">
+        <item quantity="one">opened %1$d page</item>
+        <item quantity="other">opened %1$d pages</item>
+    </plurals>
+    <plurals name="browser_steps_click">
+        <item quantity="one">clicked once</item>
+        <item quantity="other">clicked %1$d times</item>
+    </plurals>
+    <plurals name="browser_steps_type">
+        <item quantity="one">typed once</item>
+        <item quantity="other">typed %1$d times</item>
+    </plurals>
+    <plurals name="browser_steps_screenshot">
+        <item quantity="one">took %1$d screenshot</item>
+        <item quantity="other">took %1$d screenshots</item>
+    </plurals>
+    <plurals name="browser_steps_read">
+        <item quantity="one">read the page once</item>
+        <item quantity="other">read the page %1$d times</item>
+    </plurals>
+    <plurals name="browser_steps_other">
+        <item quantity="one">%1$d other step</item>
+        <item quantity="other">%1$d other steps</item>
+    </plurals>
+    <string name="browser_steps_using">Using the browser</string>
+</resources>

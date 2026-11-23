@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="code_explore_read">
+        <item quantity="one">%1$d fichier lu</item>
+        <item quantity="many">%1$d fichiers lus</item>
+        <item quantity="other">%1$d fichiers lus</item>
+    </plurals>
+    <plurals name="code_explore_search">
+        <item quantity="one">%1$d recherche</item>
+        <item quantity="many">%1$d recherches</item>
+        <item quantity="other">%1$d recherches</item>
+    </plurals>
+    <plurals name="code_explore_list">
+        <item quantity="one">%1$d dossier listé</item>
+        <item quantity="many">%1$d dossiers listés</item>
+        <item quantity="other">%1$d dossiers listés</item>
+    </plurals>
+    <plurals name="code_explore_web">
+        <item quantity="one">%1$d source web vérifiée</item>
+        <item quantity="many">%1$d sources web vérifiées</item>
+        <item quantity="other">%1$d sources web vérifiées</item>
+    </plurals>
+    <plurals name="code_explore_memory">
+        <item quantity="one">%1$d souvenir rappelé</item>
+        <item quantity="many">%1$d souvenirs rappelés</item>
+        <item quantity="other">%1$d souvenirs rappelés</item>
+    </plurals>
+    <plurals name="code_explore_other">
+        <item quantity="one">%1$d vérification exécutée</item>
+        <item quantity="many">%1$d vérifications exécutées</item>
+        <item quantity="other">%1$d vérifications exécutées</item>
+    </plurals>
+    <plurals name="code_explore_failed">
+        <item quantity="one">%1$d échec</item>
+        <item quantity="many">%1$d échecs</item>
+        <item quantity="other">%1$d échecs</item>
+    </plurals>
+    <string name="code_explore_exploring">Exploration</string>
+    <string name="code_live_writing_line">Écriture de la ligne %1$d</string>
+    <string name="code_live_editing_lines">Réécriture de %1$d lignes</string>
+    <string name="code_live_waiting_for_code">En attente du code</string>
+    <string name="code_cache_catalog_price">Certaines requêtes utilisent le prix catalogue du modèle. Votre fournisseur peut facturer différemment.</string>
+    <string name="context_tab_limits">Limites</string>
+    <string name="context_free_tokens">%1$s libre</string>
+    <string name="context_used">utilisé</string>
+    <string name="context_cache_hit_rate_short">Taux de cache</string>
+    <string name="context_requests_short">Requêtes</string>
+    <string name="context_limit_used">%1$s sur %2$s utilisés</string>
+    <plurals name="browser_steps_open">
+        <item quantity="one">%1$d page ouverte</item>
+        <item quantity="many">%1$d pages ouvertes</item>
+        <item quantity="other">%1$d pages ouvertes</item>
+    </plurals>
+    <plurals name="browser_steps_click">
+        <item quantity="one">%1$d clic</item>
+        <item quantity="many">%1$d clics</item>
+        <item quantity="other">%1$d clics</item>
+    </plurals>
+    <plurals name="browser_steps_type">
+        <item quantity="one">%1$d saisie</item>
+        <item quantity="many">%1$d saisies</item>
+        <item quantity="other">%1$d saisies</item>
+    </plurals>
+    <plurals name="browser_steps_screenshot">
+        <item quantity="one">%1$d capture d\'écran</item>
+        <item quantity="many">%1$d captures d\'écran</item>
+        <item quantity="other">%1$d captures d\'écran</item>
+    </plurals>
+    <plurals name="browser_steps_read">
+        <item quantity="one">page lue %1$d fois</item>
+        <item quantity="many">page lue %1$d fois</item>
+        <item quantity="other">page lue %1$d fois</item>
+    </plurals>
+    <plurals name="browser_steps_other">
+        <item quantity="one">%1$d autre étape</item>
+        <item quantity="many">%1$d autres étapes</item>
+        <item quantity="other">%1$d autres étapes</item>
+    </plurals>
+    <string name="browser_steps_using">Utilisation du navigateur</string>
+</resources>

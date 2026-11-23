@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="code_explore_read">
+        <item quantity="other">讀取了 %1$d 個檔案</item>
+    </plurals>
+    <plurals name="code_explore_search">
+        <item quantity="other">搜尋了 %1$d 次</item>
+    </plurals>
+    <plurals name="code_explore_list">
+        <item quantity="other">列出了 %1$d 個資料夾</item>
+    </plurals>
+    <plurals name="code_explore_web">
+        <item quantity="other">檢查了 %1$d 個網頁來源</item>
+    </plurals>
+    <plurals name="code_explore_memory">
+        <item quantity="other">召回了 %1$d 則記憶</item>
+    </plurals>
+    <plurals name="code_explore_other">
+        <item quantity="other">執行了 %1$d 項檢查</item>
+    </plurals>
+    <plurals name="code_explore_failed">
+        <item quantity="other">%1$d 項失敗</item>
+    </plurals>
+    <string name="code_explore_exploring">正在探索</string>
+    <string name="code_live_writing_line">正在寫入第 %1$d 行</string>
+    <string name="code_live_editing_lines">正在改寫 %1$d 行</string>
+    <string name="code_live_waiting_for_code">等待程式碼</string>
+    <string name="context_tab_limits">上限</string>
+    <string name="context_free_tokens">剩餘 %1$s</string>
+    <string name="context_used">已用</string>
+    <string name="context_cache_hit_rate_short">快取命中率</string>
+    <string name="context_requests_short">請求</string>
+    <string name="context_limit_used">已用 %1$s / %2$s</string>
+    <string name="code_cache_catalog_price">部分請求採用模型的目錄標價。你的供應商收費可能不同。</string>
+    <plurals name="browser_steps_open">
+        <item quantity="other">開啟了 %1$d 個頁面</item>
+    </plurals>
+    <plurals name="browser_steps_click">
+        <item quantity="other">點擊了 %1$d 次</item>
+    </plurals>
+    <plurals name="browser_steps_type">
+        <item quantity="other">輸入了 %1$d 次</item>
+    </plurals>
+    <plurals name="browser_steps_screenshot">
+        <item quantity="other">擷取了 %1$d 張截圖</item>
+    </plurals>
+    <plurals name="browser_steps_read">
+        <item quantity="other">讀取頁面 %1$d 次</item>
+    </plurals>
+    <plurals name="browser_steps_other">
+        <item quantity="other">%1$d 個其他步驟</item>
+    </plurals>
+    <string name="browser_steps_using">正在使用瀏覽器</string>
+</resources>

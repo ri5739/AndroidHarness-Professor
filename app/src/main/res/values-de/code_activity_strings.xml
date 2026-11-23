@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="code_explore_read">
+        <item quantity="one">%1$d Datei gelesen</item>
+        <item quantity="other">%1$d Dateien gelesen</item>
+    </plurals>
+    <plurals name="code_explore_search">
+        <item quantity="one">%1$d Mal gesucht</item>
+        <item quantity="other">%1$d Mal gesucht</item>
+    </plurals>
+    <plurals name="code_explore_list">
+        <item quantity="one">%1$d Ordner aufgelistet</item>
+        <item quantity="other">%1$d Ordner aufgelistet</item>
+    </plurals>
+    <plurals name="code_explore_web">
+        <item quantity="one">%1$d Webquelle geprüft</item>
+        <item quantity="other">%1$d Webquellen geprüft</item>
+    </plurals>
+    <plurals name="code_explore_memory">
+        <item quantity="one">%1$d Erinnerung abgerufen</item>
+        <item quantity="other">%1$d Erinnerungen abgerufen</item>
+    </plurals>
+    <plurals name="code_explore_other">
+        <item quantity="one">%1$d Prüfung ausgeführt</item>
+        <item quantity="other">%1$d Prüfungen ausgeführt</item>
+    </plurals>
+    <plurals name="code_explore_failed">
+        <item quantity="one">%1$d fehlgeschlagen</item>
+        <item quantity="other">%1$d fehlgeschlagen</item>
+    </plurals>
+    <string name="code_explore_exploring">Erkundet</string>
+    <string name="code_live_writing_line">Schreibt Zeile %1$d</string>
+    <string name="code_live_editing_lines">Schreibt %1$d Zeilen neu</string>
+    <string name="code_live_waiting_for_code">Wartet auf Code</string>
+    <string name="code_cache_catalog_price">Einige Anfragen nutzen den Katalogpreis des Modells. Dein Anbieter kann anders abrechnen.</string>
+    <string name="context_tab_limits">Grenzen</string>
+    <string name="context_free_tokens">%1$s frei</string>
+    <string name="context_used">belegt</string>
+    <string name="context_cache_hit_rate_short">Cache-Trefferquote</string>
+    <string name="context_requests_short">Anfragen</string>
+    <string name="context_limit_used">%1$s von %2$s belegt</string>
+    <plurals name="browser_steps_open">
+        <item quantity="one">%1$d Seite geöffnet</item>
+        <item quantity="other">%1$d Seiten geöffnet</item>
+    </plurals>
+    <plurals name="browser_steps_click">
+        <item quantity="one">%1$d Mal geklickt</item>
+        <item quantity="other">%1$d Mal geklickt</item>
+    </plurals>
+    <plurals name="browser_steps_type">
+        <item quantity="one">%1$d Mal getippt</item>
+        <item quantity="other">%1$d Mal getippt</item>
+    </plurals>
+    <plurals name="browser_steps_screenshot">
+        <item quantity="one">%1$d Screenshot aufgenommen</item>
+        <item quantity="other">%1$d Screenshots aufgenommen</item>
+    </plurals>
+    <plurals name="browser_steps_read">
+        <item quantity="one">Seite %1$d Mal gelesen</item>
+        <item quantity="other">Seite %1$d Mal gelesen</item>
+    </plurals>
+    <plurals name="browser_steps_other">
+        <item quantity="one">%1$d weiterer Schritt</item>
+        <item quantity="other">%1$d weitere Schritte</item>
+    </plurals>
+    <string name="browser_steps_using">Browser wird verwendet</string>
+</resources>
