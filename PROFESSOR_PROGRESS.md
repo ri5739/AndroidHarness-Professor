@@ -17,6 +17,8 @@ Last updated: 2026-11-23
 ## Currently in progress
 - CI run #14 is still in progress at the last check; its unit tests are green. Run #13 is the verified full successful build.
 - Phase 1 source mapping: initial integration seams documented in `AI_CORE_INTEGRATION_MAP.md`. Confirmed existing AgentEngine, LLM provider abstraction/HarnessProvider, fallback policy/provider, LocalModelProvider, DataStore preferences, Room-backed owner/project memory, MainActivity, and AppNav. Detailed route/wiring review remains.
+- [x] Added `ProfessorAiAdapter.kt` (commit `386a8b41`): streams text from an injected AndroidHarness `LlmProvider`, uses `ProviderConfig`/`RequestOptions`, accepts scoped conversation turns, and does not instantiate providers or own API keys. Provider failures are surfaced and empty replies rejected.
+- [ ] Run CI against the adapter commit and review any build/test failures.
 
 
 ## Not yet implemented/verified
