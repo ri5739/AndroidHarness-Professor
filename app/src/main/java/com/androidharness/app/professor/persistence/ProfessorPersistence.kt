@@ -12,6 +12,9 @@ class ProfessorPersistence(private val dao:ProfessorPersistenceDao) : ProfessorQ
  override suspend fun retry(scope:ConversationScope,id:String,error:String?,now:Long):Boolean { val attempts=(dao.processingAttempts(p(scope),scope.accountId,scope.conversationId,id)?:return false)+1; if(attempts>=ProfessorRetryPolicy.MAX_ATTEMPTS)return dao.fail(p(scope),scope.accountId,scope.conversationId,id,error?.take(500),now)==1; return dao.retry(p(scope),scope.accountId,scope.conversationId,id,ProfessorRetryPolicy.retryAt(now,attempts),error?.take(500),now)==1 }
  suspend fun fail(scope:ConversationScope,id:String,error:String?,now:Long=System.currentTimeMillis())=dao.fail(p(scope),scope.accountId,scope.conversationId,id,error?.take(500),now)==1
  suspend fun recoverInterrupted(now:Long=System.currentTimeMillis())=dao.recover(now)
+ suspend fun pendingScopes():List<ConversationScope> = dao.pendingScopes().mapNotNull { row ->
+  runCatching { ConversationScope(MessagingPlatform.valueOf(row.platform), row.accountId, row.conversationId) }.getOrNull()
+ }
  suspend fun cancelPending(scope:ConversationScope,now:Long=System.currentTimeMillis())=dao.cancel(p(scope),scope.accountId,scope.conversationId,now)
  suspend fun clearScope(scope:ConversationScope) { dao.clearIncoming(p(scope),scope.accountId,scope.conversationId); dao.clearDrafts(p(scope),scope.accountId,scope.conversationId) }
  fun pendingCountFlow():Flow<Int> = dao.pendingCount()
