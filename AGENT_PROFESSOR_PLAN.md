@@ -60,3 +60,14 @@ Adapters must report capabilities rather than assume all platforms behave alike:
 - If classification is uncertain, do not disclose the potentially sensitive content. Use a safe acknowledgement and request owner approval.
 - Never automatically disclose high-risk secrets (passwords, OTPs, payment credentials, authentication tokens, private keys), regardless of confidence or urgency.
 - This is the target policy, not a claim that automatic sending is currently implemented. The current orchestrator remains review-only until outgoing-content classification, approval UX, platform send adapters, recipient/sent-state verification, rate limits, and device tests are complete.
+
+
+## Owner-guided Training Chat (high-priority planned feature)
+- [ ] Build a dedicated in-app owner-only Training Chat so the owner can teach behavior, tone, workflows, contact-specific preferences, and corrections in natural language.
+- [ ] Convert teaching turns into previewable candidate lessons; require explicit owner approval before durable activation.
+- [ ] Store approved, versioned lessons with strict global/platform/account/contact scope isolation.
+- [ ] Retrieve relevant approved lessons into the existing Professor orchestration context through AndroidHarness AI Core only.
+- [ ] Add lesson inspect/edit/pause/delete/reset, conflict resolution, correction/example teaching, and no-send simulation.
+- [ ] Reject/redact credentials and secrets; lessons cannot override safety/approval rules or emergency pause.
+- [ ] Add unit/instrumentation/CI/device verification.
+- Full specification: `AGENT_TRAINING_CHAT_SPEC.md`. This is a planned requirement, **not yet implemented**.
