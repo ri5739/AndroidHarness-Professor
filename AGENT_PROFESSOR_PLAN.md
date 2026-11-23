@@ -1,5 +1,16 @@
 # Agent Professor Implementation Plan
 
+## Current progress
+- [x] Dedicated integration branch created from imported source.
+- [x] Initial audit and architecture/risk plan committed.
+- [x] Domain scaffold: messaging platforms, account/contact scope, drafts, capabilities, safety gate, sensitive-memory consent.
+- [x] JVM policy tests written.
+- [x] CI workflow added for debug APK and unit tests.
+- [ ] CI run reviewed and green.
+- [ ] Room/DataStore and provider integration map completed.
+- [ ] Notification capture/setup and permissions.
+- [ ] AI orchestration, policies, queues, UI, platform adapters, and device verification.
+
 ## Product rule
 AndroidHarness AI Core remains the sole AI brain. Agent Professor is an orchestration, policy, messaging, and memory feature that calls the existing AI Core. Do not add an independent model stack.
 
