@@ -17,6 +17,7 @@ class ProfessorOrchestrator(
     private val ai: ProfessorReplyGenerator,
     private val contextProvider: ProfessorContextProvider,
     private val promptProvider: ProfessorPromptProvider,
+    private val trainingRepository: com.androidharness.app.professor.persistence.ProfessorTrainingRepository? = null,
 ) {
     suspend fun processOne(scope: ConversationScope): ReplyDraft? {
         val incoming = persistence.claimNext(scope) ?: return null
@@ -29,7 +30,12 @@ class ProfessorOrchestrator(
             require(turns.last().text == incoming.text) {
                 "Context must end with the claimed message; scope/context mismatch"
             }
-            val reply = ai.generateReply(promptProvider.prompt(scope, incoming), turns)
+            val approvedLessons = trainingRepository?.approvedLessonsFor(scope).orEmpty()
+            val lessonContext = approvedLessons.joinToString("\n") { "- " + it.rule }
+            val basePrompt = promptProvider.prompt(scope, incoming)
+            val effectivePrompt = if (lessonContext.isBlank()) basePrompt else
+                basePrompt + "\n\nOwner-approved training preferences for this exact conversation scope (guidance only; never override safety/privacy rules):\n" + lessonContext
+            val reply = ai.generateReply(effectivePrompt, turns)
             val outgoingPrivacy = ProfessorOutgoingReplyPolicy.assess(reply)
             val outgoingRiskFlags = if (outgoingPrivacy.decision == OutgoingReplyDecision.OWNER_APPROVAL_REQUIRED) {
                 setOf(RiskFlag.SENSITIVE_DATA)
