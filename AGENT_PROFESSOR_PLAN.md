@@ -71,3 +71,18 @@ Adapters must report capabilities rather than assume all platforms behave alike:
 - [ ] Reject/redact credentials and secrets; lessons cannot override safety/approval rules or emergency pause.
 - [ ] Add unit/instrumentation/CI/device verification.
 - Full specification: `AGENT_TRAINING_CHAT_SPEC.md`. This is a planned requirement, **not yet implemented**.
+
+
+## Owner-requested expanded batch — 2026-11-23
+Implementation is underway on `professor/integration`. First committed foundation:
+- Explicit owner-confirmed identity mapping and strict scope checks.
+- Scoped sliding-window rate limiting.
+- Bidirectional turn model/merge with dedupe and no fabricated outgoing turns.
+- Fail-closed attachment capability assessment.
+- Metadata-only audit event model.
+- Proposed/approved Training Lesson state with secret rejection.
+- JVM tests for the above.
+
+Remaining work in this batch: real Training Chat UI + persistence + AndroidHarness AI Core lesson extraction; draft management and notification permission UI; Smart Reply Revision Option C (must preserve its exact agreed behavior); platform-sourced outgoing history; account/contact mapping UI and persistence; contact-memory consent UI; durable audit log/privacy/rate-limit wiring; OCR/document/voice adapters; platform capability checks; battery/background and real-device tests; security/release preparation.
+
+CI #89 is green for commit `abb3095b637276208683d88bfbc881ef6fe1faf2`. The new domain and tests commits `00cb932` and `a452ee5` are newer and still require CI verification.
