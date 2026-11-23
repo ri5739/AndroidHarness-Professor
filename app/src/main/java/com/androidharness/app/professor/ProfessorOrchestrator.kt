@@ -30,13 +30,19 @@ class ProfessorOrchestrator(
                 "Context must end with the claimed message; scope/context mismatch"
             }
             val reply = ai.generateReply(promptProvider.prompt(scope, incoming), turns)
+            val outgoingPrivacy = ProfessorOutgoingReplyPolicy.assess(reply)
+            val outgoingRiskFlags = if (outgoingPrivacy.decision == OutgoingReplyDecision.OWNER_APPROVAL_REQUIRED) {
+                setOf(RiskFlag.SENSITIVE_DATA)
+            } else emptySet()
             val draft = ReplyDraft(
                 draftId = stableDraftId(scope, incoming.messageId),
                 scope = scope,
                 inReplyToMessageId = incoming.messageId,
                 text = reply,
                 status = DraftStatus.NEEDS_REVIEW,
-                riskFlags = setOf(RiskFlag.LOW_CONFIDENCE) + com.androidharness.app.professor.capture.ProfessorNotificationRiskClassifier.classify(incoming.text),
+                riskFlags = setOf(RiskFlag.LOW_CONFIDENCE) +
+                    com.androidharness.app.professor.capture.ProfessorNotificationRiskClassifier.classify(incoming.text) +
+                    outgoingRiskFlags,
                 confidence = REVIEW_ONLY_CONFIDENCE,
             )
             persistence.saveDraft(draft)
