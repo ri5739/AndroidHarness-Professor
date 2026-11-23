@@ -13,6 +13,9 @@ import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.RoomDatabase
+import com.androidharness.app.professor.persistence.ProfessorIncomingEntity
+import com.androidharness.app.professor.persistence.ProfessorDraftEntity
+import com.androidharness.app.professor.persistence.ProfessorPersistenceDao
 import kotlinx.coroutines.flow.Flow
 
 @Entity(tableName = "sessions")
@@ -845,14 +848,24 @@ interface HarnessDao {
         MemoryEntity::class,
         ChatAnswerVersionEntity::class,
         SavedAnswerEntity::class,
+        ProfessorIncomingEntity::class,
+        ProfessorDraftEntity::class,
     ],
-    version = 27,
+    version = 28,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun dao(): HarnessDao
 
     companion object {
+        val MIGRATION_27_28 = object : androidx.room.migration.Migration(27, 28) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS professor_incoming (platform TEXT NOT NULL, accountId TEXT NOT NULL, conversationId TEXT NOT NULL, messageId TEXT NOT NULL, senderId TEXT NOT NULL, text TEXT NOT NULL, receivedAt INTEGER NOT NULL, status TEXT NOT NULL, attempts INTEGER NOT NULL, nextRetryAt INTEGER NOT NULL, lastError TEXT, insertedAt INTEGER NOT NULL, updatedAt INTEGER NOT NULL, PRIMARY KEY(platform, accountId, conversationId, messageId))")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_professor_incoming_status_nextRetryAt_receivedAt ON professor_incoming(status, nextRetryAt, receivedAt)")
+                db.execSQL("CREATE TABLE IF NOT EXISTS professor_drafts (draftId TEXT NOT NULL PRIMARY KEY, platform TEXT NOT NULL, accountId TEXT NOT NULL, conversationId TEXT NOT NULL, inReplyToMessageId TEXT NOT NULL, text TEXT NOT NULL, status TEXT NOT NULL, riskFlagsJson TEXT NOT NULL, confidence REAL NOT NULL, createdAt INTEGER NOT NULL, updatedAt INTEGER NOT NULL)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_professor_drafts_platform_accountId_conversationId_updatedAt ON professor_drafts(platform, accountId, conversationId, updatedAt)")
+            }
+        }
         val MIGRATION_26_27 = object : androidx.room.migration.Migration(26, 27) {
             override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE work_projects ADD COLUMN chatNamePattern TEXT")
