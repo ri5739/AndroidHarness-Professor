@@ -9,7 +9,7 @@
 - [x] Orchestrator review-only flow and AI adapter seam.
 - [x] JVM tests and CI workflow present.
 - [x] Latest CI run #41 passed (unit tests + debug APK build): https://github.com/ri5739/AndroidHarness-Professor/actions/runs/45148488040
-- [ ] Phase 2: wire selected AndroidHarness provider/router/configuration into Professor AI adapter and supply real conversation context.
+- [x] Phase 2 provider/router/configuration is wired to AndroidHarness AI Core; persisted incoming-message context window integrated. Full bidirectional history requires platform-specific conversation capture.
 - [ ] Phase 3: implement notification listener service, user permission/setup, safe notification parsing and durable queue mapping.
 - [ ] Phase 4: background worker/lifecycle integration and interrupted-processing recovery verification.
 - [ ] Later phases: draft management UI, contact memory, safety review, platform-specific interaction/send adapters, device tests, dashboard polish.
