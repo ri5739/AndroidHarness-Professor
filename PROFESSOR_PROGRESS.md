@@ -24,7 +24,7 @@ Last updated: 2026-11-23
 - [x] Processing failures use retry policy; coroutine cancellation is preserved.
 - [x] Context must end with exact claimed incoming message.
 - [x] Drafts are NEEDS_REVIEW with LOW_CONFIDENCE; provider confidence is not calibrated.
-- [ ] Inject into app lifecycle/worker and connect real context provider.
+- [x] Worker now builds a bounded, chronological context window from persisted incoming messages within the exact platform/account/conversation scope; current incoming message is always last. Full bidirectional history still requires platform-specific capture.
 - [x] Introduced injectable queue/reply contracts and unit tests for successful draft generation, scope/context mismatch retry, and empty queue behavior.\n- [ ] CI validation of the new orchestration tests.
 
 ## Phase 3 — Notification Capture (started)
