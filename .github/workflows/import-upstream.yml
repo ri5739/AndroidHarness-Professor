@@ -1,0 +1,52 @@
+name: Import AndroidHarness upstream
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout project repository
+        uses: actions/checkout@v4
+        with:
+          ref: import/androidharness-source
+          path: target
+          persist-credentials: true
+
+      - name: Checkout upstream AndroidHarness
+        uses: actions/checkout@v4
+        with:
+          repository: Sanuu7/AndroidHarness
+          ref: main
+          path: upstream
+          persist-credentials: false
+
+      - name: Preserve project roadmap and copy upstream source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd target
+          if [ -f README.md ]; then
+            cp README.md PROJECT_ROADMAP.md
+          fi
+          cp .github/workflows/import-upstream.yml /tmp/import-upstream.yml
+          rsync -a --delete --exclude='.git' --exclude='.github/workflows/import-upstream.yml' ../upstream/ ./
+          mkdir -p .github/workflows
+          cp /tmp/import-upstream.yml .github/workflows/import-upstream.yml
+          echo "Upstream files: $(find ../upstream -type f | wc -l)"
+          echo "Copied files: $(find . -type f -not -path './.git/*' | wc -l)"
+          echo "Upstream commit: $(git -C ../upstream rev-parse HEAD)" > IMPORT_STATUS.md
+          echo "Imported upstream Sanuu7/AndroidHarness main source. Project roadmap is retained in PROJECT_ROADMAP.md." >> IMPORT_STATUS.md
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes detected."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Import upstream AndroidHarness source"
+          git push origin import/androidharness-source
