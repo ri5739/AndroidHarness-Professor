@@ -189,9 +189,16 @@ fun SettingsScreen(
     onRunSetup: () -> Unit = {},
     onOpenSkills: () -> Unit = {},
     onOpenProviders: () -> Unit = {},
+    onOpenTrainingChat: () -> Unit = {},
     onOpenLearnDestination: (com.androidharness.app.ui.learn.LearnDestination) -> Unit = {},
 ) = SettingsExpressiveTheme {
-    SettingsScreenContent(container, onBack, onOpenStats, onRunSetup, onOpenSkills, onOpenProviders, onOpenLearnDestination)
+    Column {
+        androidx.compose.material3.Button(
+            onClick = onOpenTrainingChat,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        ) { Text("Agent Professor · Training Chat") }
+        SettingsScreenContent(container, onBack, onOpenStats, onRunSetup, onOpenSkills, onOpenProviders, onOpenLearnDestination)
+    }
 }
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
