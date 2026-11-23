@@ -22,8 +22,7 @@ object ProfessorWorkScheduler {
         WorkManager.getInstance(context).enqueueUniqueWork("professor-$key", ExistingWorkPolicy.KEEP, request)
     }
 
-    fun enqueueAll(context: Context) {
-        // Queue scopes are intentionally scheduled by the capture path when messages arrive.
-        // Startup recovery is handled by HarnessApp and does not guess identities.
+    suspend fun enqueueAll(context: Context, scopes: List<ConversationScope>) {
+        scopes.distinct().forEach { enqueue(context, it) }
     }
 }
