@@ -20,6 +20,18 @@ class ProfessorMessageQueueTest {
         assertEquals("m1", q.poll(scopeB)?.messageId)
     }
 
+    @Test fun concurrentDuplicateEnqueueOnlyAddsOneMessage() {
+        val q = ProfessorMessageQueue()
+        val workers = (1..32).map {
+            Thread { q.enqueue(msg("same-id")) }
+        }
+        workers.forEach(Thread::start)
+        workers.forEach(Thread::join)
+        assertEquals(1, q.pendingCount(scopeA))
+        assertEquals("same-id", q.poll(scopeA)?.messageId)
+        assertNull(q.poll(scopeA))
+    }
+
     @Test fun pauseBlocksEnqueueAndPoll() {
         val q = ProfessorMessageQueue()
         q.setPaused(true)
