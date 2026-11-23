@@ -60,7 +60,7 @@ class ProfessorOrchestrator(
 /** Deterministic ID makes draft upserts idempotent when queue completion is retried. */
 internal fun stableDraftId(scope: ConversationScope, messageId: String): String {
     val identity = listOf(scope.platform.name, scope.accountId, scope.conversationId, messageId)
-        .joinToString("\\u0000")
+        .joinToString("") { "${it.length}:$it" }
     val digest = MessageDigest.getInstance("SHA-256").digest(identity.toByteArray(Charsets.UTF_8))
     return "professor-" + digest.joinToString("") { "%02x".format(it) }
 }
