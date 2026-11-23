@@ -71,6 +71,19 @@ class ProfessorOrchestratorTest {
     }
 
 
+    @Test fun generatedPrivateReplyIsMarkedForOwnerApproval() = runBlocking {
+        val store = FakeStore(incoming())
+        val orchestrator = ProfessorOrchestrator(
+            store, ProfessorReplyGenerator { _, _ -> "Your OTP is 482911" },
+            ProfessorContextProvider { _, message -> listOf(ProfessorConversationTurn(ProfessorTurnRole.USER, message.text)) },
+            ProfessorPromptProvider { _, _ -> "Prompt" },
+        )
+        val draft = orchestrator.processOne(scope)
+        assertNotNull(draft)
+        assertTrue(draft!!.riskFlags.contains(RiskFlag.SENSITIVE_DATA))
+        assertEquals(DraftStatus.NEEDS_REVIEW, draft.status)
+    }
+
     @Test fun contextMismatchDoesNotGenerateAndSchedulesRetry() = runBlocking {
         val store = FakeStore(incoming("actual"))
         var generated = false
