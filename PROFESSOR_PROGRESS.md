@@ -6,41 +6,48 @@ Last updated: 2026-11-23
 - [x] AndroidHarness remains the single AI core; Professor does not create a parallel provider/API-key stack.
 - [x] Dedicated integration branch, audit and implementation plan.
 - [x] Scoped domain models, send safety gate and contact-memory consent policy.
-- [x] In-memory per-conversation FIFO/dedup queue and policy tests.
+- [x] Per-conversation queue and dedup tests.
 - [x] CI workflow for unit tests and debug APK build.
-- [x] ProfessorAiAdapter streams from injected AndroidHarness LlmProvider; no provider/key ownership.
-- [x] Persistent Room entities for incoming messages and drafts.
-- [x] Deduplicating enqueue with platform/account/conversation/message composite key.
-- [x] Per-conversation FIFO claim and processing status transitions.
+- [x] Professor AI adapter streams from injected AndroidHarness provider.
+- [x] Room entities, deduplicating enqueue, per-conversation claim and status transitions.
 - [x] Retry/recovery/cancel APIs; bounded exponential retry policy.
-- [x] Draft save/load/flow/status/delete APIs.
-- [x] Room migration 27→28 creates Professor tables/indexes without altering existing tables.
-- [x] Professor DAO exposed from AppDatabase and repository exposed from AppContainer.
-- [x] CI runs #27–#30 passed.
-- [ ] Device migration and install testing.
+- [x] Draft persistence and review status APIs.
+- [x] Room migration 27→28 and AppContainer exposure.
+- [ ] Device migration/install verification.
 
-## Phase 2 — AI Orchestration (in progress)
-- [x] Review-only processor to claim scoped messages, request scope-aware context, generate via AndroidHarness AI adapter, persist review drafts and complete queue items.
-- [x] Processing failures use retry policy; coroutine cancellation is preserved.
-- [x] Context must end with exact claimed incoming message.
-- [x] Drafts are NEEDS_REVIEW with LOW_CONFIDENCE; provider confidence is not calibrated.
-- [x] Worker now builds a bounded, chronological context window from persisted incoming messages within the exact platform/account/conversation scope; current incoming message is always last. Full bidirectional history still requires platform-specific capture.
-- [x] Introduced injectable queue/reply contracts and unit tests for successful draft generation, scope/context mismatch retry, and empty queue behavior.\n- [ ] CI validation of the new orchestration tests.
+## Phase 2 — AI Orchestration
+- [x] Review-only processor: scoped context, AI draft generation, persistence, queue completion.
+- [x] Context provider and mismatch validation.
+- [x] Context window bounded, chronological, scope-isolated, with claimed message last.
+- [x] Retry policy and cancellation propagation.
+- [x] Orchestration unit tests.
+- [x] CI validation (latest run #71 passed).
+- [ ] Full bidirectional conversation history; notification capture currently provides incoming-only history.
 
-## Phase 3 — Notification Capture (started)
-- [x] Pure package classifier/notification text normalizer for supported messaging apps.
-- [x] Unit tests for supported packages, unknown packages, empty content, trimming and duplicate title.
-- [ ] Android NotificationListenerService, manifest registration, notification access onboarding.
-- [ ] Redaction/metadata handling, stable notification identity and update/dismiss lifecycle.
-- [ ] Scope/account/contact mapping and durable queue integration (must not guess identity).
+## Phase 3 — Notification Capture (in progress)
+- [x] Supported package classifier and text normalizer for WhatsApp, WhatsApp Business, Messenger, Meta Business Messenger, Instagram.
+- [x] NotificationListenerService registered in Manifest and durable queue scheduling.
+- [x] Safe capture of notification title/text with text normalization.
+- [x] Notification identity helper: package-scoped account bucket and notification-key-first conversation IDs, hashed for privacy.
+- [x] Unit tests for notification identity and package scoping added; CI is currently running.
+- [ ] Notification access onboarding and status UI.
+- [ ] Notification metadata redaction, notification update/dismiss lifecycle review.
+- [ ] Real account/contact identity mapping (not reliably exposed by notification metadata; do not guess).
 
-## Next phases
-- Persistent, per-contact memories and owner-consent workflow.
-- Background reliability (worker scheduling, boot recovery, permission/battery diagnostics).
-- Platform integration/capability verification for WhatsApp, WhatsApp Business, Messenger, Meta Business Messenger and Instagram DM.
-- Advanced intelligence/safety: context merging, conversation-ending detection, privacy checks, attachment/document/voice handling, rate limiting.
-- Compose Professor settings/dashboard (postponed).
-- Physical-device verification and APK install testing.
+## Phase 4 — Background processing/recovery
+- [x] Unique scoped WorkManager jobs, bounded draining.
+- [x] Startup recovery for interrupted queue entries and re-enqueue of pending scopes.
+- [x] Retry for unavailable AI provider/config/key and recoverable processing errors.
+- [ ] Battery/background behavior and real-device verification.
+
+## Remaining milestones
+- Draft Management UI and owner review/edit controls.
+- Smart Reply Revision Option C and safe handling of overlapping messages.
+- Contact memory persistence and consent/review controls.
+- Privacy/safety checks, rate limiting, attachment/document/OCR/voice handling.
+- Platform capability matrix and platform-specific adapter verification.
+- Settings/control UI, audit log, emergency pause.
+- Automated/device testing, security/reliability audit and release gates.
 
 ## Safety baseline
-No platform sending is enabled. Orchestrator outputs review-only drafts; sending stays disabled until adapters, recipient verification, privacy/rate checks, sent-state verification and device testing are implemented and validated.
+No platform sending is enabled. Orchestrator creates review-only drafts; no automatic send. Sending remains blocked until platform capability checks, recipient verification, privacy/rate checks, sent-state verification and physical-device validation are implemented.
