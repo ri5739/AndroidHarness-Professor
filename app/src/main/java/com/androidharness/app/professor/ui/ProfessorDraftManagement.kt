@@ -31,18 +31,16 @@ fun ProfessorDraftManagement(
     drafts: List<ReplyDraft>,
     onSaveEdit: (ReplyDraft, String) -> Unit,
     onMarkReviewed: (ReplyDraft) -> Unit,
-    onApproveAndSend: (ReplyDraft) -> Unit,
     onDelete: (ReplyDraft) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var editingDraft by remember { mutableStateOf<ReplyDraft?>(null) }
     var editedText by remember { mutableStateOf("") }
-    var approvalDraft by remember { mutableStateOf<ReplyDraft?>(null) }
 
     Column(modifier = modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Agent Professor replies", style = MaterialTheme.typography.headlineSmall)
         Text(
-            "Ordinary messages are sent automatically when the messaging notification exposes a supported reply action. Private replies wait here for your approval.",
+            "Replies are saved as drafts. Sending is currently disabled until a verified platform adapter and all safety checks are available.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -82,12 +80,9 @@ fun ProfessorDraftManagement(
                                     editingDraft = draft
                                     editedText = draft.text
                                 }) { Text("Edit") }
-                                if (draft.status == DraftStatus.NEEDS_REVIEW ||
-                                    draft.status == DraftStatus.PENDING ||
-                                    draft.status == DraftStatus.READY
-                                ) {
-                                    Button(onClick = { approvalDraft = draft }) {
-                                        Text("Approve & send")
+                                if (draft.status == DraftStatus.PENDING || draft.status == DraftStatus.NEEDS_REVIEW) {
+                                    Button(onClick = { onMarkReviewed(draft) }) {
+                                        Text("Mark reviewed")
                                     }
                                 }
                                 TextButton(onClick = { onDelete(draft) }) { Text("Delete") }
@@ -129,51 +124,4 @@ fun ProfessorDraftManagement(
         )
     }
 
-    val pendingApproval = approvalDraft
-    if (pendingApproval != null) {
-        AlertDialog(
-            onDismissRequest = { approvalDraft = null },
-            title = { Text("Approve this reply?") },
-            text = { Text("This sends the displayed text to the selected conversation. Check that it contains no information you do not want to share.") },
-            confirmButton = {
-                Button(onClick = {
-                    onApproveAndSend(pendingApproval)
-                    approvalDraft = null
-                }) { Text("Confirm and send") }
-            },
-            dismissButton = {
-                TextButton(onClick = { approvalDraft = null }) { Text("Cancel") }
-            },
-        )
-    }
-}
-
-/** Permission status panel. */
-@Composable
-fun ProfessorNotificationPermissionPanel(
-    granted: Boolean,
-    onRequestPermission: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Card(modifier = modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text("Notification access", style = MaterialTheme.typography.titleMedium)
-            Text(
-                if (granted) {
-                    "Permission is granted. Incoming notification capture can be enabled."
-                } else {
-                    "Permission is not granted. Professor cannot read supported messaging notifications yet."
-                },
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            if (!granted) {
-                Button(onClick = onRequestPermission) { Text("Grant notification access") }
-            } else {
-                Text("Access granted", color = MaterialTheme.colorScheme.primary)
-            }
-        }
-    }
 }
