@@ -19,6 +19,9 @@ class ProfessorTrainingRepository(
     fun lessons(): Flow<List<ProfessorTrainingLessonEntity>> = dao.trainingLessonsFlow()
 
     fun conversationHistory(): Flow<List<ProfessorTrainingTurnEntity>> = dao.trainingTurnsFlow()
+    /** Bounded, chronological context for the next owner-training turn. */
+    suspend fun recentConversationHistory(): List<ProfessorTrainingTurnEntity> =
+        dao.recentTrainingTurns().asReversed().filterNot { ProfessorTrainingSecretPolicy.containsSecret(it.text) }
 
     suspend fun appendTrainingTurn(role: String, text: String, createdAt: Long = now()): String {
         require(role == "OWNER" || role == "ASSISTANT") { "Training Chat accepts owner and assistant turns only" }
