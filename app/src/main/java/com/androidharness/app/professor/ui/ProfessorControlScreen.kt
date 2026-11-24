@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -29,6 +28,7 @@ import com.androidharness.app.AppContainer
 import com.androidharness.app.professor.DraftStatus
 import com.androidharness.app.professor.MessagingPlatform
 import com.androidharness.app.professor.ProfessorPlatformPreferences
+import com.androidharness.app.professor.capture.ProfessorNotificationReplyActions
 import kotlinx.coroutines.launch
 
 @Composable
@@ -41,14 +41,12 @@ fun ProfessorControlScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     var notificationAccess by remember {
         mutableStateOf(
-            android.service.notification.NotificationListenerService::class.java.let {
-                android.provider.Settings.Secure.getString(
-                    context.contentResolver,
-                    "enabled_notification_listeners",
-                )?.split(':')?.any { component ->
-                    component.startsWith(context.packageName + "/")
-                } == true
-            },
+            Settings.Secure.getString(
+                context.contentResolver,
+                "enabled_notification_listeners",
+            )?.split(':')?.any { component ->
+                component.startsWith(context.packageName + "/")
+            } == true,
         )
     }
     fun refreshPermission() {
@@ -80,8 +78,7 @@ fun ProfessorControlScreen(
         androidx.compose.material3.TextButton(onClick = onBack) { Text("Back") }
         Text("Agent Professor", style = MaterialTheme.typography.headlineMedium)
         Text(
-            "Incoming notifications from supported messaging apps are captured for reply drafting. " +
-                "This control screen does not send messages.",
+            "Ordinary messages are replied to automatically when the messaging app exposes a supported notification reply action. Personal or confidential replies wait for your approval.",
             style = MaterialTheme.typography.bodyMedium,
         )
         ProfessorNotificationPermissionPanel(
@@ -94,8 +91,7 @@ fun ProfessorControlScreen(
         )
         Text("Platform connections", style = MaterialTheme.typography.titleLarge)
         Text(
-            "Turn on notification capture separately for each messaging app you have connected. " +
-                "This only reads supported notifications and prepares drafts; it does not send replies.",
+            "Enable notification capture separately for each messaging app. Automatic sending requires that app to expose an inline reply action in its notification.",
             style = MaterialTheme.typography.bodySmall,
         )
         MessagingPlatform.entries.forEach { platform ->
@@ -114,7 +110,7 @@ fun ProfessorControlScreen(
                 )
             }
         }
-        Text("Reply drafts", style = MaterialTheme.typography.titleLarge)
+        Text("Replies awaiting action", style = MaterialTheme.typography.titleLarge)
         ProfessorDraftManagement(
             drafts = drafts,
             onSaveEdit = { draft, text ->
@@ -125,6 +121,16 @@ fun ProfessorControlScreen(
             onMarkReviewed = { draft ->
                 coroutineScope.launch {
                     container.professorPersistence.setDraftStatus(draft.draftId, DraftStatus.READY)
+                }
+            },
+            onApproveAndSend = { draft ->
+                coroutineScope.launch {
+                    val sent = ProfessorNotificationReplyActions.send(
+                        context, draft.inReplyToMessageId, draft.text,
+                    )
+                    if (sent) {
+                        container.professorPersistence.setDraftStatus(draft.draftId, DraftStatus.SENT)
+                    }
                 }
             },
             onDelete = { draft ->
