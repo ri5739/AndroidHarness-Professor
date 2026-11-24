@@ -122,6 +122,18 @@ data class ProfessorDraftEntity(@PrimaryKey val draftId:String,val platform:Stri
  }
 
  @Transaction
+ suspend fun restoreTrainingLessonWithAudit(id: String, auditId: String, now: Long): Int {
+  val before = trainingLesson(id) ?: return 0
+  val source = trainingAuditEvent(auditId) ?: return 0
+  if (source.lessonId != id || source.action != "EDITED" || source.ruleAfter.isBlank()) return 0
+  val changed = restoreTrainingLessonRule(id, source.ruleAfter, now)
+  if (changed == 1) insertTrainingAudit(
+   ProfessorTrainingAuditEntity(UUID.randomUUID().toString(), id, "RESTORED", before.revision + 1, before.rule, source.ruleAfter, now)
+  )
+  return changed
+ }
+
+ @Transaction
  suspend fun deleteTrainingLessonWithAudit(id: String, now: Long) {
   val before = trainingLesson(id) ?: return
   insertTrainingAudit(ProfessorTrainingAuditEntity(UUID.randomUUID().toString(), id, "DELETED", before.revision, before.rule, "", now))
@@ -135,6 +147,12 @@ data class ProfessorDraftEntity(@PrimaryKey val draftId:String,val platform:Stri
   }
   clearTrainingLessons()
  }
+
+ @Query("SELECT * FROM professor_training_audit WHERE auditId=:auditId")
+ suspend fun trainingAuditEvent(auditId: String): ProfessorTrainingAuditEntity?
+
+ @Query("UPDATE professor_training_lessons SET rule=:rule, revision=revision+1, updatedAt=:now, state='PROPOSED', approvedAt=NULL WHERE lessonId=:id")
+ suspend fun restoreTrainingLessonRule(id: String, rule: String, now: Long): Int
 
  @Query("SELECT * FROM professor_training_lessons")
  suspend fun trainingLessonsSnapshot(): List<ProfessorTrainingLessonEntity>

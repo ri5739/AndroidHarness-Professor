@@ -68,6 +68,17 @@ class ProfessorTrainingRepository(
         return dao.editTrainingLessonWithAudit(lessonId, rule.trim(), now()) == 1
     }
 
+    suspend fun restore(lessonId: String, auditId: String): Boolean {
+        val event = dao.trainingAuditEvent(auditId) ?: return false
+        require(event.lessonId == lessonId && event.action == "EDITED") {
+            "Only a prior edited revision of this lesson can be restored"
+        }
+        require(event.ruleAfter.isNotBlank() && !ProfessorTrainingSecretPolicy.containsSecret(event.ruleAfter)) {
+            "Credential-like content cannot be restored as a lesson"
+        }
+        return dao.restoreTrainingLessonWithAudit(lessonId, auditId, now()) == 1
+    }
+
     suspend fun resetAllLessons() = dao.clearTrainingLessonsWithAudit(now())
 
     /** Returns only approved owner rules that are global or match the exact conversation scope. */

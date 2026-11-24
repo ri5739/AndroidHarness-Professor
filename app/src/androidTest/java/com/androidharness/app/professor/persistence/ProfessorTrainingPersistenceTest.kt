@@ -49,6 +49,35 @@ class ProfessorTrainingPersistenceTest {
     }
 
     @Test
+    fun restoringAnEditedRevisionCreatesNewProposedRevisionAndAuditEvent() = runBlocking {
+        dao.insertTrainingLesson(lesson("lesson-restore", "Be concise"))
+        dao.editTrainingLessonWithAudit("lesson-restore", "Be warm and concise", 20L)
+        val editEvent = dao.trainingAuditFlow("lesson-restore").first().single()
+
+        assertEquals(1, dao.restoreTrainingLessonWithAudit("lesson-restore", editEvent.auditId, 30L))
+        val restored = dao.trainingLesson("lesson-restore")!!
+        assertEquals("Be warm and concise", restored.rule)
+        assertEquals(3, restored.revision)
+        assertEquals("PROPOSED", restored.state)
+        assertEquals(null, restored.approvedAt)
+        val events = dao.trainingAuditFlow("lesson-restore").first()
+        assertEquals("RESTORED", events.first().action)
+        assertEquals("Be concise", events.first().ruleBefore)
+        assertEquals("Be warm and concise", events.first().ruleAfter)
+    }
+
+    @Test
+    fun restoreRejectsAnAuditEventFromAnotherLesson() = runBlocking {
+        dao.insertTrainingLesson(lesson("lesson-a", "Rule A"))
+        dao.insertTrainingLesson(lesson("lesson-b", "Rule B"))
+        dao.editTrainingLessonWithAudit("lesson-a", "Rule A revised", 20L)
+        val event = dao.trainingAuditFlow("lesson-a").first().single()
+
+        assertEquals(0, dao.restoreTrainingLessonWithAudit("lesson-b", event.auditId, 30L))
+        assertEquals("Rule B", dao.trainingLesson("lesson-b")!!.rule)
+    }
+
+    @Test
     fun resetWritesAuditEventsBeforeRemovingLessons() = runBlocking {
         dao.insertTrainingLesson(lesson("lesson-reset", "Use a friendly tone"))
         dao.clearTrainingLessonsWithAudit(50L)

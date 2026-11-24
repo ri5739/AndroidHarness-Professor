@@ -41,6 +41,7 @@ fun ProfessorTrainingChatScreen(
     onTeach: (String, ConversationScope?) -> Unit,
     onApprove: (String) -> Unit,
     onEdit: (String, String) -> Unit,
+    onRestore: (String, String) -> Unit,
     onPause: (String) -> Unit,
     onResume: (String) -> Unit,
     onDelete: (String) -> Unit,
@@ -184,6 +185,11 @@ fun ProfessorTrainingChatScreen(
                                 else -> "v${event.revision}: ${event.action.lowercase()} — ${event.ruleBefore}"
                             }
                             Text(detail, style = MaterialTheme.typography.bodySmall)
+                            if (event.action == "EDITED") {
+                                TextButton(onClick = { onRestore(lesson.lessonId, event.auditId) }) {
+                                    Text("Restore revision " + event.revision)
+                                }
+                            }
                         }
                     }
                     Text(

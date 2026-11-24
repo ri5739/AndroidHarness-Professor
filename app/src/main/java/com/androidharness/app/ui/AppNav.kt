@@ -1074,6 +1074,9 @@ fun AppNav(container: AppContainer) {
                         onEdit = { id, rule -> scope.launch { runCatching { container.professorTraining.edit(id, rule) }.onFailure {
                             android.widget.Toast.makeText(uiContext, it.message ?: "Edit failed", android.widget.Toast.LENGTH_LONG).show()
                         } } },
+                        onRestore = { id, auditId -> scope.launch { runCatching { container.professorTraining.restore(id, auditId) }.onFailure {
+                            android.widget.Toast.makeText(uiContext, it.message ?: "Restore failed", android.widget.Toast.LENGTH_LONG).show()
+                        } } },
                         onPause = { id -> scope.launch { container.professorTraining.pause(id) } },
                         onResume = { id -> scope.launch { runCatching { container.professorTraining.resume(id) }.onFailure {
                             android.widget.Toast.makeText(uiContext, it.message ?: "Resume failed", android.widget.Toast.LENGTH_LONG).show()
