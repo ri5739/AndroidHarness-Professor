@@ -38,8 +38,10 @@ fun ProfessorTrainingChatScreen(
     onApprove: (String) -> Unit,
     onEdit: (String, String) -> Unit,
     onPause: (String) -> Unit,
+    onResume: (String) -> Unit,
     onDelete: (String) -> Unit,
     onReset: () -> Unit,
+    onClearHistory: () -> Unit,
     onSimulate: (String, String?) -> Unit,
     simulationPreview: String?,
     aiCoreReady: Boolean,
@@ -51,6 +53,7 @@ fun ProfessorTrainingChatScreen(
     var editing by remember { mutableStateOf<ProfessorTrainingLessonEntity?>(null) }
     var editText by remember { mutableStateOf("") }
     var showReset by remember { mutableStateOf(false) }
+    var showClearHistory by remember { mutableStateOf(false) }
     val scopedConflicts = lessons.filter { it.state == "APPROVED" || it.state == "PROPOSED" }
         .groupBy { Triple(it.scopePlatform, it.accountId, it.conversationId) }
         .values.flatMap { group ->
@@ -96,7 +99,12 @@ fun ProfessorTrainingChatScreen(
                 }
             }
         }
-        item { Text("Training history", style = MaterialTheme.typography.titleMedium) }
+        item {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Training history", style = MaterialTheme.typography.titleMedium)
+                TextButton(onClick = { showClearHistory = true }, enabled = history.isNotEmpty()) { Text("Clear history") }
+            }
+        }
         items(history, key = { it.turnId }) { turn ->
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(10.dp)) {
@@ -142,6 +150,7 @@ fun ProfessorTrainingChatScreen(
                         }
                         OutlinedButton(onClick = { editing = lesson; editText = lesson.rule }) { Text("Edit") }
                         if (lesson.state == "APPROVED") OutlinedButton(onClick = { onPause(lesson.lessonId) }) { Text("Pause") }
+                        if (lesson.state == "PAUSED") OutlinedButton(onClick = { onResume(lesson.lessonId) }) { Text("Resume") }
                         TextButton(onClick = { onDelete(lesson.lessonId) }) { Text("Delete") }
                     }
                 }
@@ -193,6 +202,15 @@ fun ProfessorTrainingChatScreen(
                 }
             },
             dismissButton = { TextButton(onClick = { editing = null }) { Text("Cancel") } },
+        )
+    }
+    if (showClearHistory) {
+        AlertDialog(
+            onDismissRequest = { showClearHistory = false },
+            title = { Text("Clear training history?") },
+            text = { Text("Training Chat-এর কথোপকথনের ইতিহাস মুছে যাবে। Approved lesson অক্ষত থাকবে।") },
+            confirmButton = { Button(onClick = { onClearHistory(); showClearHistory = false }) { Text("Clear history") } },
+            dismissButton = { TextButton(onClick = { showClearHistory = false }) { Text("Cancel") } },
         )
     }
     if (showReset) {
