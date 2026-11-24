@@ -116,6 +116,11 @@ class VoiceInputController(
 
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            // On Android 14+, ask the installed recognition service to identify the spoken
+            // language instead of pinning speech recognition to the device locale.
+            if (Build.VERSION.SDK_INT >= 34) {
+                putExtra("android.speech.extra.ENABLE_LANGUAGE_DETECTION", true)
+            }
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
             putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
             // When the user stops talking for this long the recognizer

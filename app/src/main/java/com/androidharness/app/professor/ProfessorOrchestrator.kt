@@ -33,8 +33,9 @@ class ProfessorOrchestrator(
             val approvedLessons = trainingRepository?.approvedLessonsFor(scope).orEmpty()
             val lessonContext = approvedLessons.joinToString("\n") { "- " + it.rule }
             val basePrompt = promptProvider.prompt(scope, incoming)
-            val effectivePrompt = if (lessonContext.isBlank()) basePrompt else
-                basePrompt + "\n\nOwner-approved training preferences for this exact conversation scope (guidance only; never override safety/privacy rules):\n" + lessonContext
+            val promptWithLanguage = ProfessorLanguagePolicy.appendInstructions(basePrompt)
+            val effectivePrompt = if (lessonContext.isBlank()) promptWithLanguage else
+                promptWithLanguage + "\n\nOwner-approved training preferences for this exact conversation scope (guidance only; never override safety/privacy rules):\n" + lessonContext
             val reply = ai.generateReply(effectivePrompt, turns)
             val outgoingPrivacy = ProfessorOutgoingReplyPolicy.assess(reply)
             val outgoingRiskFlags = if (outgoingPrivacy.decision == OutgoingReplyDecision.OWNER_APPROVAL_REQUIRED) {
