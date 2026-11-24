@@ -25,30 +25,29 @@ import androidx.compose.ui.unit.dp
 import com.androidharness.app.professor.DraftStatus
 import com.androidharness.app.professor.ReplyDraft
 
-/**
- * Review-only draft inbox. Sending is intentionally not exposed here:
- * a platform adapter and the full safety gate must own any future send action.
- */
+/** Draft inbox with explicit owner approval before a held reply can be sent. */
 @Composable
 fun ProfessorDraftManagement(
     drafts: List<ReplyDraft>,
     onSaveEdit: (ReplyDraft, String) -> Unit,
     onMarkReviewed: (ReplyDraft) -> Unit,
+    onApproveAndSend: (ReplyDraft) -> Unit,
     onDelete: (ReplyDraft) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var editingDraft by remember { mutableStateOf<ReplyDraft?>(null) }
     var editedText by remember { mutableStateOf("") }
+    var approvalDraft by remember { mutableStateOf<ReplyDraft?>(null) }
 
     Column(modifier = modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Agent Professor drafts", style = MaterialTheme.typography.headlineSmall)
+        Text("Agent Professor replies", style = MaterialTheme.typography.headlineSmall)
         Text(
-            "Review, edit or remove generated replies. This screen never sends messages.",
+            "Ordinary messages are sent automatically when the messaging notification exposes a supported reply action. Private replies wait here for your approval.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         if (drafts.isEmpty()) {
-            Text("No reply drafts yet.", style = MaterialTheme.typography.bodyMedium)
+            Text("No pending replies.", style = MaterialTheme.typography.bodyMedium)
         } else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 items(drafts, key = { it.draftId }) { draft ->
@@ -69,7 +68,7 @@ fun ProfessorDraftManagement(
                             Text(draft.text, style = MaterialTheme.typography.bodyLarge)
                             if (draft.riskFlags.isNotEmpty()) {
                                 Text(
-                                    "Needs owner review: ${draft.riskFlags.joinToString()}",
+                                    "Owner approval required: ${draft.riskFlags.joinToString()}",
                                     color = MaterialTheme.colorScheme.error,
                                     style = MaterialTheme.typography.bodySmall,
                                 )
@@ -83,12 +82,14 @@ fun ProfessorDraftManagement(
                                     editingDraft = draft
                                     editedText = draft.text
                                 }) { Text("Edit") }
-                                Button(
-                                    onClick = { onMarkReviewed(draft) },
-                                    enabled = draft.status == DraftStatus.NEEDS_REVIEW ||
-                                        draft.status == DraftStatus.PENDING ||
-                                        draft.status == DraftStatus.READY,
-                                ) { Text("Mark reviewed") }
+                                if (draft.status == DraftStatus.NEEDS_REVIEW ||
+                                    draft.status == DraftStatus.PENDING ||
+                                    draft.status == DraftStatus.READY
+                                ) {
+                                    Button(onClick = { approvalDraft = draft }) {
+                                        Text("Approve & send")
+                                    }
+                                }
                                 TextButton(onClick = { onDelete(draft) }) { Text("Delete") }
                             }
                         }
@@ -102,7 +103,7 @@ fun ProfessorDraftManagement(
     if (current != null) {
         AlertDialog(
             onDismissRequest = { editingDraft = null },
-            title = { Text("Edit reply draft") },
+            title = { Text("Edit reply") },
             text = {
                 OutlinedTextField(
                     value = editedText,
@@ -127,12 +128,27 @@ fun ProfessorDraftManagement(
             },
         )
     }
+
+    val pendingApproval = approvalDraft
+    if (pendingApproval != null) {
+        AlertDialog(
+            onDismissRequest = { approvalDraft = null },
+            title = { Text("Approve this reply?") },
+            text = { Text("This sends the displayed text to the selected conversation. Check that it contains no information you do not want to share.") },
+            confirmButton = {
+                Button(onClick = {
+                    onApproveAndSend(pendingApproval)
+                    approvalDraft = null
+                }) { Text("Confirm and send") }
+            },
+            dismissButton = {
+                TextButton(onClick = { approvalDraft = null }) { Text("Cancel") }
+            },
+        )
+    }
 }
 
-/**
- * Permission status panel. The host screen supplies the real platform permission
- * state and launches the system settings/permission request from the callback.
- */
+/** Permission status panel. */
 @Composable
 fun ProfessorNotificationPermissionPanel(
     granted: Boolean,
