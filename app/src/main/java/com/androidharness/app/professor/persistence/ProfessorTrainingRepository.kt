@@ -88,6 +88,13 @@ class ProfessorTrainingRepository(
     suspend fun pause(lessonId: String): Boolean =
         dao.updateTrainingLessonState(lessonId, ProfessorTrainingLessonState.PAUSED.name, now()) == 1
 
+    suspend fun resume(lessonId: String): Boolean {
+        val lesson = dao.trainingLesson(lessonId) ?: return false
+        require(lesson.state == ProfessorTrainingLessonState.PAUSED.name) { "Only a paused lesson can be resumed" }
+        require(!ProfessorTrainingSecretPolicy.containsSecret(lesson.rule)) { "Credential-like content cannot be activated" }
+        return dao.updateTrainingLessonState(lessonId, ProfessorTrainingLessonState.APPROVED.name, now()) == 1
+    }
+
     suspend fun reject(lessonId: String): Boolean =
         dao.updateTrainingLessonState(lessonId, ProfessorTrainingLessonState.REJECTED.name, now()) == 1
 
