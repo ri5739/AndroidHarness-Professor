@@ -30,7 +30,8 @@ class ProfessorOrchestratorTest {
 
     @Test fun successfulProcessingSavesReviewDraftAndCompletesQueue() = runBlocking {
         val store = FakeStore(incoming())
-        val generator = ProfessorReplyGenerator { _, _ -> "Hello back" }
+        var receivedPrompt = ""
+        val generator = ProfessorReplyGenerator { prompt, _ -> receivedPrompt = prompt; "Hello back" }
         val orchestrator = ProfessorOrchestrator(
             store, generator,
             ProfessorContextProvider { _, message -> listOf(ProfessorConversationTurn(ProfessorTurnRole.USER, message.text)) },
@@ -39,6 +40,8 @@ class ProfessorOrchestratorTest {
         val draft = orchestrator.processOne(scope)
         assertNotNull(draft)
         assertEquals("Hello back", draft!!.text)
+        assertTrue(receivedPrompt.contains("ALWAYS write the initial reply in Bengali"))
+        assertTrue(receivedPrompt.contains("conversation-scoped preference"))
         assertEquals(DraftStatus.NEEDS_REVIEW, draft.status)
         assertTrue(draft.riskFlags.contains(RiskFlag.LOW_CONFIDENCE))
         assertEquals(ProfessorOrchestrator.REVIEW_ONLY_CONFIDENCE, draft.confidence)
