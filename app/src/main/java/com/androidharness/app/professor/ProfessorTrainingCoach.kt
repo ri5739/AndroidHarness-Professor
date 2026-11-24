@@ -10,6 +10,8 @@ class ProfessorTrainingCoach(
     private val ai: ProfessorReplyGenerator,
     private val repository: ProfessorTrainingRepository,
 ) {
+    companion object { private const val MAX_TRAINING_CONTEXT_TURNS = 32 }
+
     suspend fun teach(ownerMessage: String, scope: ConversationScope? = null): TrainingCoachResult {
         require(ownerMessage.isNotBlank()) { "Training message cannot be blank" }
         if (ProfessorTrainingSecretPolicy.containsSecret(ownerMessage)) {
@@ -17,7 +19,7 @@ class ProfessorTrainingCoach(
             repository.appendTrainingTurn("ASSISTANT", safeResponse)
             return TrainingCoachResult(answer = safeResponse, rejectedReason = "Secret-like input rejected before history persistence")
         }
-        repository.appendTrainingTurn("OWNER", ownerMessage)
+        val ownerTurnId = repository.appendTrainingTurn("OWNER", ownerMessage)
         val prompt = """
             You are the owner's private Agent Professor training assistant.
             Interpret the owner's message as guidance, examples, corrections, or a question.
@@ -29,10 +31,18 @@ class ProfessorTrainingCoach(
             NO_LESSON: <brief helpful response>
             Do not claim a lesson is saved or active. It remains proposed until explicit owner approval.
         """.trimIndent()
-        val answer = ai.generateReply(
-            prompt,
-            listOf(ProfessorConversationTurn(ProfessorTurnRole.USER, ownerMessage)),
-        ).trim()
+        val priorTurns = repository.recentConversationHistory()
+            .filterNot { it.turnId == ownerTurnId }
+            .mapNotNull { turn ->
+                when (turn.role) {
+                    "OWNER" -> ProfessorConversationTurn(ProfessorTurnRole.USER, turn.text)
+                    "ASSISTANT" -> ProfessorConversationTurn(ProfessorTurnRole.ASSISTANT, turn.text)
+                    else -> null
+                }
+            }
+        val trainingContext = (priorTurns + ProfessorConversationTurn(ProfessorTurnRole.USER, ownerMessage))
+            .takeLast(MAX_TRAINING_CONTEXT_TURNS)
+        val answer = ai.generateReply(prompt, trainingContext).trim()
         val result = when {
             answer.startsWith("LESSON:", ignoreCase = true) -> {
                 val rule = answer.substringAfter(':').trim()
