@@ -855,7 +855,7 @@ interface HarnessDao {
         ProfessorTrainingLessonEntity::class,
         ProfessorTrainingTurnEntity::class,
     ],
-    version = 30,
+    version = 31,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -863,6 +863,11 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun professorPersistenceDao(): ProfessorPersistenceDao
 
     companion object {
+        val MIGRATION_30_31 = object : androidx.room.migration.Migration(30, 31) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE professor_training_lessons ADD COLUMN revision INTEGER NOT NULL DEFAULT 1")
+            }
+        }
         val MIGRATION_29_30 = object : androidx.room.migration.Migration(29, 30) {
             override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS professor_training_turns (turnId TEXT NOT NULL PRIMARY KEY, role TEXT NOT NULL, text TEXT NOT NULL, createdAt INTEGER NOT NULL)")
