@@ -12,6 +12,11 @@ on:
 permissions:
   contents: write
 
+# Keep one current build per branch; every commit otherwise queues redundant full APK builds.
+concurrency:
+  group: professor-integration-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   unit-tests:
     runs-on: ubuntu-24.04
