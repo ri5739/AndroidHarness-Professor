@@ -17,10 +17,10 @@ class ProfessorTrainingCoach(
         require(ownerMessage.isNotBlank()) { "Training message cannot be blank" }
         if (ProfessorTrainingSecretPolicy.containsSecret(ownerMessage)) {
             val safeResponse = "গোপন credential বা authentication তথ্য Training Chat-এ সংরক্ষণ করা যাবে না। অনুগ্রহ করে secret ছাড়া নিয়মটি আবার লিখুন।"
-            repository.appendTrainingTurn("ASSISTANT", safeResponse)
+            repository.appendTrainingTurn("ASSISTANT", safeResponse, scope)
             return TrainingCoachResult(answer = safeResponse, rejectedReason = "Secret-like input rejected before history persistence")
         }
-        val ownerTurnId = repository.appendTrainingTurn("OWNER", ownerMessage)
+        val ownerTurnId = repository.appendTrainingTurn("OWNER", ownerMessage, scope)
         val prompt = """
             You are the owner's private Agent Professor training assistant.
             Interpret the owner's message as guidance, examples, corrections, or a question.
@@ -33,7 +33,7 @@ class ProfessorTrainingCoach(
             Do not claim a lesson is saved or active. It remains proposed until explicit owner approval.
         """.trimIndent()
         val trainingContext = buildTrainingConversationContext(
-            history = repository.recentConversationHistory(),
+            history = repository.recentConversationHistory(scope),
             currentOwnerTurnId = ownerTurnId,
             ownerMessage = ownerMessage,
             maxTurns = MAX_TRAINING_CONTEXT_TURNS,
@@ -53,7 +53,7 @@ class ProfessorTrainingCoach(
                 rejectedReason = "Unexpected training response format",
             )
         }
-        repository.appendTrainingTurn("ASSISTANT", result.answer)
+        repository.appendTrainingTurn("ASSISTANT", result.answer, scope)
         return result
     }
 
