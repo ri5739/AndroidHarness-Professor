@@ -990,31 +990,82 @@ fun AppNav(container: AppContainer) {
             }
 
             composable("professor-training") {
-                val trainingHistory by container.professorTraining.conversationHistory()
-                    .collectAsStateWithLifecycle(initialValue = emptyList())
-                val trainingLessons by container.professorTraining.lessons()
-                    .collectAsStateWithLifecycle(initialValue = emptyList())
-                com.androidharness.app.professor.ui.ProfessorTrainingChatScreen(
-                    history = trainingHistory,
-                    lessons = trainingLessons,
-                    aiCoreReady = false,
-                    onTeach = { message ->
-                        android.widget.Toast.makeText(uiContext, "AI Core training connection is not wired yet.", android.widget.Toast.LENGTH_LONG).show()
-                    },
-                    onApprove = { id -> scope.launch { runCatching { container.professorTraining.approve(id) }.onFailure {
-                        android.widget.Toast.makeText(uiContext, it.message ?: "Approval failed", android.widget.Toast.LENGTH_LONG).show()
-                    } } },
-                    onEdit = { id, rule -> scope.launch { runCatching { container.professorTraining.edit(id, rule) }.onFailure {
-                        android.widget.Toast.makeText(uiContext, it.message ?: "Edit failed", android.widget.Toast.LENGTH_LONG).show()
-                    } } },
-                    onPause = { id -> scope.launch { container.professorTraining.pause(id) } },
-                    onDelete = { id -> scope.launch { container.professorTraining.delete(id) } },
-                    onReset = { scope.launch { container.professorTraining.resetAllLessons() } },
-                    onSimulate = { _, _ ->
-                        android.widget.Toast.makeText(uiContext, "No-send simulation awaits the AI Core runtime bridge.", android.widget.Toast.LENGTH_LONG).show()
-                    },
-                    simulationPreview = null,
-                )
+                var ownerVerified by remember { mutableStateOf(false) }
+                var authUnavailable by remember { mutableStateOf(false) }
+                val authenticateOwner = {
+                    val activity = com.androidharness.app.ui.common.findFragmentActivity(uiContext)
+                    if (activity == null || !com.androidharness.app.ui.common.BiometricAuth.canAuthenticate(uiContext)) {
+                        authUnavailable = true
+                    } else {
+                        authUnavailable = false
+                        com.androidharness.app.ui.common.BiometricAuth.prompt(
+                            activity = activity,
+                            title = "Unlock Agent Professor Training",
+                            subtitle = "Confirm the device owner's identity to access private training rules.",
+                            onSuccess = { ownerVerified = true },
+                            onError = { ownerVerified = false },
+                        )
+                    }
+                }
+                androidx.compose.runtime.DisposableEffect(Unit) {
+                    val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
+                    val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+                        if (event == androidx.lifecycle.Lifecycle.Event.ON_STOP) ownerVerified = false
+                    }
+                    lifecycle.addObserver(observer)
+                    onDispose {
+                        lifecycle.removeObserver(observer)
+                        ownerVerified = false
+                    }
+                }
+                if (!ownerVerified) {
+                    Column(
+                        modifier = Modifier.fillMaxSize().padding(24.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text("Training Chat is locked", style = MaterialTheme.typography.headlineSmall)
+                        Text(
+                            "ব্যক্তিগত training rule ও conversation history দেখতে ডিভাইসের PIN, pattern, password অথবা biometric দিয়ে মালিকের পরিচয় নিশ্চিত করুন।",
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        if (authUnavailable) {
+                            Text(
+                                "এই ডিভাইসে নিরাপদ screen lock/biometric সেট করা নেই। নিরাপত্তার জন্য Training Chat খোলা যাচ্ছে না।",
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
+                        androidx.compose.material3.Button(onClick = authenticateOwner) {
+                            Text("Verify owner")
+                        }
+                    }
+                } else {
+                    val trainingHistory by container.professorTraining.conversationHistory()
+                        .collectAsStateWithLifecycle(initialValue = emptyList())
+                    val trainingLessons by container.professorTraining.lessons()
+                        .collectAsStateWithLifecycle(initialValue = emptyList())
+                    com.androidharness.app.professor.ui.ProfessorTrainingChatScreen(
+                        history = trainingHistory,
+                        lessons = trainingLessons,
+                        aiCoreReady = false,
+                        onTeach = { message ->
+                            android.widget.Toast.makeText(uiContext, "AI Core training connection is not wired yet.", android.widget.Toast.LENGTH_LONG).show()
+                        },
+                        onApprove = { id -> scope.launch { runCatching { container.professorTraining.approve(id) }.onFailure {
+                            android.widget.Toast.makeText(uiContext, it.message ?: "Approval failed", android.widget.Toast.LENGTH_LONG).show()
+                        } } },
+                        onEdit = { id, rule -> scope.launch { runCatching { container.professorTraining.edit(id, rule) }.onFailure {
+                            android.widget.Toast.makeText(uiContext, it.message ?: "Edit failed", android.widget.Toast.LENGTH_LONG).show()
+                        } } },
+                        onPause = { id -> scope.launch { container.professorTraining.pause(id) } },
+                        onDelete = { id -> scope.launch { container.professorTraining.delete(id) } },
+                        onReset = { scope.launch { container.professorTraining.resetAllLessons() } },
+                        onSimulate = { _, _ ->
+                            android.widget.Toast.makeText(uiContext, "No-send simulation awaits the AI Core runtime bridge.", android.widget.Toast.LENGTH_LONG).show()
+                        },
+                        simulationPreview = null,
+                    )
+                }
             }
             composable("settings") {
                 SettingsScreen(
