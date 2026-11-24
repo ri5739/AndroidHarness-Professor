@@ -64,6 +64,11 @@ fun ProfessorTrainingChatScreen(
     var editText by remember { mutableStateOf("") }
     var showReset by remember { mutableStateOf(false) }
     var showClearHistory by remember { mutableStateOf(false) }
+    var auditFilter by remember { mutableStateOf("") }
+    val filteredAuditEvents = auditEvents.filter { event ->
+        auditFilter.isBlank() || listOf(event.action, event.lessonId, event.ruleBefore, event.ruleAfter)
+            .any { it.contains(auditFilter, ignoreCase = true) }
+    }
     val hasAnyScopeField = scopePlatform.isNotBlank() || scopeAccountId.isNotBlank() || scopeConversationId.isNotBlank()
     val selectedScope = if (!hasAnyScopeField) null else runCatching {
         ConversationScope(
@@ -221,7 +226,17 @@ fun ProfessorTrainingChatScreen(
         item {
             if (auditEvents.isNotEmpty()) {
                 Text("Recent training audit", style = MaterialTheme.typography.titleMedium)
-                auditEvents.take(30).forEach { event ->
+                OutlinedTextField(
+                    value = auditFilter,
+                    onValueChange = { auditFilter = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Filter by action, lesson ID or rule text") },
+                    singleLine = true,
+                )
+                if (filteredAuditEvents.isEmpty()) {
+                    Text("No audit events match this filter.", style = MaterialTheme.typography.bodySmall)
+                }
+                filteredAuditEvents.take(30).forEach { event ->
                     Card(Modifier.fillMaxWidth()) {
                         Column(Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text("${event.action} · revision ${event.revision}", style = MaterialTheme.typography.labelMedium)
