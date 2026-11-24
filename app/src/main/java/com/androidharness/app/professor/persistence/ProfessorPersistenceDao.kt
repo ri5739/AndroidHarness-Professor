@@ -15,6 +15,7 @@ data class ProfessorTrainingLessonEntity(
     val createdAt: Long,
     val updatedAt: Long,
     val approvedAt: Long? = null,
+    val revision: Int = 1,
 )
 
 @Entity(tableName = "professor_training_turns", indices = [Index("createdAt")])
@@ -84,7 +85,7 @@ data class ProfessorDraftEntity(@PrimaryKey val draftId:String,val platform:Stri
  @Query("UPDATE professor_training_lessons SET state=:state, updatedAt=:now WHERE lessonId=:id AND state IN ('PROPOSED','APPROVED','PAUSED')")
  suspend fun updateTrainingLessonState(id: String, state: String, now: Long): Int
 
- @Query("UPDATE professor_training_lessons SET rule=:rule, updatedAt=:now, state='PROPOSED', approvedAt=NULL WHERE lessonId=:id")
+ @Query("UPDATE professor_training_lessons SET rule=:rule, revision=revision+1, updatedAt=:now, state='PROPOSED', approvedAt=NULL WHERE lessonId=:id")
  suspend fun editTrainingLesson(id: String, rule: String, now: Long): Int
 
  @Query("DELETE FROM professor_training_lessons WHERE lessonId=:id")
