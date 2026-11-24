@@ -20,7 +20,7 @@ object ProfessorTrainingConflictDetector {
 
     private fun normalize(rule: String): Pair<Set<String>, Boolean> {
         val words = rule.lowercase().split(Regex("[^\\p{L}\\p{N}]+")).filter(String::isNotBlank).toSet()
-        val negated = words.any { it in negative } || rule.contains("করবে না") || rule.contains("করবেন না")
+        val negated = words.any { it in negative } || "না" in words || rule.contains("করবে না") || rule.contains("করবেন না")
         return words - positive - negative to negated
     }
 }
