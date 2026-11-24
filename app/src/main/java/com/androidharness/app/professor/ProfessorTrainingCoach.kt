@@ -1,6 +1,7 @@
 package com.androidharness.app.professor
 
 import com.androidharness.app.professor.persistence.ProfessorTrainingRepository
+import com.androidharness.app.professor.persistence.ProfessorTrainingTurnEntity
 
 /**
  * Owner-invoked Training Chat workflow. The supplied generator must be AndroidHarness' selected
@@ -31,17 +32,12 @@ class ProfessorTrainingCoach(
             NO_LESSON: <brief helpful response>
             Do not claim a lesson is saved or active. It remains proposed until explicit owner approval.
         """.trimIndent()
-        val priorTurns = repository.recentConversationHistory()
-            .filterNot { it.turnId == ownerTurnId }
-            .mapNotNull { turn ->
-                when (turn.role) {
-                    "OWNER" -> ProfessorConversationTurn(ProfessorTurnRole.USER, turn.text)
-                    "ASSISTANT" -> ProfessorConversationTurn(ProfessorTurnRole.ASSISTANT, turn.text)
-                    else -> null
-                }
-            }
-        val trainingContext = (priorTurns + ProfessorConversationTurn(ProfessorTurnRole.USER, ownerMessage))
-            .takeLast(MAX_TRAINING_CONTEXT_TURNS)
+        val trainingContext = buildTrainingConversationContext(
+            history = repository.recentConversationHistory(),
+            currentOwnerTurnId = ownerTurnId,
+            ownerMessage = ownerMessage,
+            maxTurns = MAX_TRAINING_CONTEXT_TURNS,
+        )
         val answer = ai.generateReply(prompt, trainingContext).trim()
         val result = when {
             answer.startsWith("LESSON:", ignoreCase = true) -> {
@@ -108,4 +104,25 @@ data class TrainingSimulation(
     val sentExternally: Boolean,
 ) {
     init { require(!sentExternally) { "Training simulation must never send externally" } }
+}
+
+/** Keeps prior owner/assistant turns in order and guarantees the current owner turn is last. */
+internal fun buildTrainingConversationContext(
+    history: List<ProfessorTrainingTurnEntity>,
+    currentOwnerTurnId: String,
+    ownerMessage: String,
+    maxTurns: Int = 32,
+): List<ProfessorConversationTurn> {
+    require(ownerMessage.isNotBlank())
+    require(maxTurns >= 1)
+    val prior = history.asSequence()
+        .filterNot { it.turnId == currentOwnerTurnId || ProfessorTrainingSecretPolicy.containsSecret(it.text) }
+        .mapNotNull { turn ->
+            when (turn.role) {
+                "OWNER" -> ProfessorConversationTurn(ProfessorTurnRole.USER, turn.text)
+                "ASSISTANT" -> ProfessorConversationTurn(ProfessorTurnRole.ASSISTANT, turn.text)
+                else -> null
+            }
+        }.toList()
+    return (prior.takeLast(maxTurns - 1) + ProfessorConversationTurn(ProfessorTurnRole.USER, ownerMessage))
 }
