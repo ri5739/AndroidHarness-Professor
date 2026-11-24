@@ -24,6 +24,9 @@ data class ProfessorTrainingTurnEntity(
     val role: String,
     val text: String,
     val createdAt: Long,
+    val scopePlatform: String? = null,
+    val accountId: String? = null,
+    val conversationId: String? = null,
 )
 
 @Entity(tableName="professor_incoming", primaryKeys=["platform","accountId","conversationId","messageId"], indices=[Index(value=["status","nextRetryAt","receivedAt"])])
@@ -63,6 +66,8 @@ data class ProfessorDraftEntity(@PrimaryKey val draftId:String,val platform:Stri
  fun trainingTurnsFlow(): Flow<List<ProfessorTrainingTurnEntity>>
  @Query("SELECT * FROM professor_training_turns ORDER BY createdAt DESC, turnId DESC LIMIT 32")
  suspend fun recentTrainingTurns(): List<ProfessorTrainingTurnEntity>
+ @Query("SELECT * FROM professor_training_turns WHERE (scopePlatform IS NULL AND accountId IS NULL AND conversationId IS NULL) OR (scopePlatform=:platform AND accountId=:accountId AND conversationId=:conversationId) ORDER BY createdAt DESC, turnId DESC LIMIT 32")
+ suspend fun recentTrainingTurnsForScope(platform: String?, accountId: String?, conversationId: String?): List<ProfessorTrainingTurnEntity>
 
  @Query("DELETE FROM professor_training_turns")
  suspend fun clearTrainingTurns()
