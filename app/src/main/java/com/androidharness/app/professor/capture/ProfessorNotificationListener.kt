@@ -24,6 +24,7 @@ class ProfessorNotificationListener : NotificationListenerService() {
         sbn ?: return
         if (sbn.packageName == packageName) return
         val platform = ProfessorNotificationClassifier.platformForPackage(sbn.packageName) ?: return
+        if (!com.androidharness.app.professor.ProfessorPlatformPreferences.isCaptureEnabled(this, platform)) return
         val notification = sbn.notification ?: return
         val extras: Bundle = notification.extras ?: return
         val title = extras.getCharSequence(Notification.EXTRA_TITLE)
