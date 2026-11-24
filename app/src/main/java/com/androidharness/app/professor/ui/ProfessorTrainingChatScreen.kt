@@ -23,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.professor.persistence.ProfessorTrainingLessonEntity
+import com.androidharness.app.professor.persistence.ProfessorTrainingAuditEntity
 import com.androidharness.app.professor.persistence.ProfessorTrainingTurnEntity
 import com.androidharness.app.professor.ProfessorTrainingConflictDetector
 import com.androidharness.app.professor.ConversationScope
@@ -36,6 +37,7 @@ import com.androidharness.app.professor.MessagingPlatform
 fun ProfessorTrainingChatScreen(
     history: List<ProfessorTrainingTurnEntity>,
     lessons: List<ProfessorTrainingLessonEntity>,
+    auditEvents: List<ProfessorTrainingAuditEntity>,
     onTeach: (String, ConversationScope?) -> Unit,
     onApprove: (String) -> Unit,
     onEdit: (String, String) -> Unit,
@@ -168,10 +170,22 @@ fun ProfessorTrainingChatScreen(
         }
         item { Text("Lesson review & management", style = MaterialTheme.typography.titleMedium) }
         items(lessons, key = { it.lessonId }) { lesson ->
+            val lessonEvents = auditEvents.filter { it.lessonId == lesson.lessonId }.take(4)
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(lesson.rule, style = MaterialTheme.typography.bodyLarge)
                     Text("Status: ${lesson.state} · Revision ${lesson.revision}", style = MaterialTheme.typography.labelMedium)
+                    if (lessonEvents.isNotEmpty()) {
+                        Text("Change history", style = MaterialTheme.typography.labelMedium)
+                        lessonEvents.forEach { event ->
+                            val detail = when (event.action) {
+                                "EDITED" -> "v${event.revision}: ${event.ruleBefore} → ${event.ruleAfter}"
+                                "DELETED", "RESET" -> "v${event.revision}: ${event.action.lowercase()} — ${event.ruleBefore}"
+                                else -> "v${event.revision}: ${event.action.lowercase()} — ${event.ruleBefore}"
+                            }
+                            Text(detail, style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
                     Text(
                         if (lesson.scopePlatform == null) "Scope: Global owner rule"
                         else "Scope: ${lesson.scopePlatform} / ${lesson.accountId} / ${lesson.conversationId}",

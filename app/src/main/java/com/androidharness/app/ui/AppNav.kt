@@ -1051,9 +1051,12 @@ fun AppNav(container: AppContainer) {
                         .collectAsStateWithLifecycle(initialValue = emptyList())
                     val trainingLessons by container.professorTraining.lessons()
                         .collectAsStateWithLifecycle(initialValue = emptyList())
+                    val trainingAuditEvents by container.professorTraining.allAuditHistory()
+                        .collectAsStateWithLifecycle(initialValue = emptyList())
                     com.androidharness.app.professor.ui.ProfessorTrainingChatScreen(
                         history = trainingHistory,
                         lessons = trainingLessons,
+                        auditEvents = trainingAuditEvents,
                         aiCoreReady = trainingAiReady,
                         onTeach = { message, trainingScope ->
                             scope.launch {

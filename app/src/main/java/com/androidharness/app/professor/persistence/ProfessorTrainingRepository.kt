@@ -24,6 +24,8 @@ class ProfessorTrainingRepository(
     fun auditHistory(lessonId: String): Flow<List<ProfessorTrainingAuditEntity>> =
         dao.trainingAuditFlow(lessonId)
 
+    fun allAuditHistory(): Flow<List<ProfessorTrainingAuditEntity>> = dao.trainingAuditFlowAll()
+
     /** Bounded, chronological context for the next owner-training turn. */
     suspend fun recentConversationHistory(scope: ConversationScope? = null): List<ProfessorTrainingTurnEntity> =
         dao.recentTrainingTurnsForScope(
