@@ -34,9 +34,10 @@ object ProfessorNotificationReplyActions {
         }
     }
 
+    /** Reuse the captured action so a held reply can be sent after explicit owner approval. */
     fun send(context: Context, messageId: String, text: String): Boolean {
         if (text.isBlank()) return false
-        val action = actions.remove(messageId) ?: return false
+        val action = actions[messageId] ?: return false
         return try {
             val input = action.remoteInputs.firstOrNull { it.allowFreeFormInput } ?: return false
             val results = Bundle().apply { putCharSequence(input.resultKey, text) }
