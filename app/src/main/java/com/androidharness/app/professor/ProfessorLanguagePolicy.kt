@@ -8,7 +8,7 @@ object ProfessorLanguagePolicy {
     const val DEFAULT_REPLY_LANGUAGE = "Bengali"
 
     /** Policy for ordinary incoming messages across messaging platforms. */
-    const val INSTRUCTIONS = """
+    val INSTRUCTIONS = """
         LANGUAGE AND VOICE MESSAGE POLICY FOR REAL CONVERSATIONS:
         - Understand incoming text in any language and mixed-language messages; do not assume English.
         - Incoming voice messages may arrive as speech-to-text transcripts. Understand the transcript
@@ -32,7 +32,7 @@ object ProfessorLanguagePolicy {
     """.trimIndent()
 
     /** Training Chat is an owner-facing workflow and intentionally has its own language behavior. */
-    const val TRAINING_INSTRUCTIONS = """
+    val TRAINING_INSTRUCTIONS = """
         TRAINING CHAT LANGUAGE POLICY:
         - Understand owner instructions in any language, including speech-to-text voice transcripts.
         - Respond to the owner in Bengali by default.
