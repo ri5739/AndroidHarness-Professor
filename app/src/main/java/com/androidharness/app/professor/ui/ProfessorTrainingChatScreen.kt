@@ -138,7 +138,7 @@ fun ProfessorTrainingChatScreen(
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(lesson.rule, style = MaterialTheme.typography.bodyLarge)
-                    Text("Status: ${lesson.state}", style = MaterialTheme.typography.labelMedium)
+                    Text("Status: ${lesson.state} · Revision ${lesson.revision}", style = MaterialTheme.typography.labelMedium)
                     Text(
                         if (lesson.scopePlatform == null) "Scope: Global owner rule"
                         else "Scope: ${lesson.scopePlatform} / ${lesson.accountId} / ${lesson.conversationId}",
