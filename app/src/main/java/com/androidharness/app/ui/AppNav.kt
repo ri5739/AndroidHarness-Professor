@@ -58,6 +58,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import com.androidharness.app.ui.common.formatTokens
+import com.androidharness.app.ui.common.findFragmentActivity
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -993,7 +994,7 @@ fun AppNav(container: AppContainer) {
                 var ownerVerified by remember { mutableStateOf(false) }
                 var authUnavailable by remember { mutableStateOf(false) }
                 val authenticateOwner = {
-                    val activity = com.androidharness.app.ui.common.findFragmentActivity(uiContext)
+                    val activity = uiContext.findFragmentActivity()
                     if (activity == null || !com.androidharness.app.ui.common.BiometricAuth.canAuthenticate(uiContext)) {
                         authUnavailable = true
                     } else {
