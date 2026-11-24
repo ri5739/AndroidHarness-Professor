@@ -1072,8 +1072,12 @@ fun AppNav(container: AppContainer) {
                             android.widget.Toast.makeText(uiContext, it.message ?: "Edit failed", android.widget.Toast.LENGTH_LONG).show()
                         } } },
                         onPause = { id -> scope.launch { container.professorTraining.pause(id) } },
+                        onResume = { id -> scope.launch { runCatching { container.professorTraining.resume(id) }.onFailure {
+                            android.widget.Toast.makeText(uiContext, it.message ?: "Resume failed", android.widget.Toast.LENGTH_LONG).show()
+                        } } },
                         onDelete = { id -> scope.launch { container.professorTraining.delete(id) } },
                         onReset = { scope.launch { container.professorTraining.resetAllLessons() } },
+                        onClearHistory = { scope.launch { container.professorTraining.clearTrainingHistory() } },
                         onSimulate = { sample, rule ->
                             scope.launch {
                                 runCatching {
