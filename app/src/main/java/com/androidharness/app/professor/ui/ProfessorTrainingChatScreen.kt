@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import com.androidharness.app.professor.persistence.ProfessorTrainingLessonEntity
 import com.androidharness.app.professor.persistence.ProfessorTrainingTurnEntity
 import com.androidharness.app.professor.ProfessorTrainingConflictDetector
+import com.androidharness.app.professor.ConversationScope
+import com.androidharness.app.professor.MessagingPlatform
 
 /**
  * Local owner-facing training workspace. It is deliberately not exposed through notification
@@ -34,7 +36,7 @@ import com.androidharness.app.professor.ProfessorTrainingConflictDetector
 fun ProfessorTrainingChatScreen(
     history: List<ProfessorTrainingTurnEntity>,
     lessons: List<ProfessorTrainingLessonEntity>,
-    onTeach: (String) -> Unit,
+    onTeach: (String, ConversationScope?) -> Unit,
     onApprove: (String) -> Unit,
     onEdit: (String, String) -> Unit,
     onPause: (String) -> Unit,
@@ -42,7 +44,7 @@ fun ProfessorTrainingChatScreen(
     onDelete: (String) -> Unit,
     onReset: () -> Unit,
     onClearHistory: () -> Unit,
-    onSimulate: (String, String?) -> Unit,
+    onSimulate: (String, String?, ConversationScope?) -> Unit,
     simulationPreview: String?,
     aiCoreReady: Boolean,
     modifier: Modifier = Modifier,
@@ -50,10 +52,22 @@ fun ProfessorTrainingChatScreen(
     var message by remember { mutableStateOf("") }
     var sample by remember { mutableStateOf("") }
     var proposedRule by remember { mutableStateOf("") }
+    var scopePlatform by remember { mutableStateOf("") }
+    var scopeAccountId by remember { mutableStateOf("") }
+    var scopeConversationId by remember { mutableStateOf("") }
     var editing by remember { mutableStateOf<ProfessorTrainingLessonEntity?>(null) }
     var editText by remember { mutableStateOf("") }
     var showReset by remember { mutableStateOf(false) }
     var showClearHistory by remember { mutableStateOf(false) }
+    val hasAnyScopeField = scopePlatform.isNotBlank() || scopeAccountId.isNotBlank() || scopeConversationId.isNotBlank()
+    val selectedScope = if (!hasAnyScopeField) null else runCatching {
+        ConversationScope(
+            MessagingPlatform.valueOf(scopePlatform.trim().uppercase()),
+            scopeAccountId.trim(),
+            scopeConversationId.trim(),
+        )
+    }.getOrNull()
+    val scopeIsValid = !hasAnyScopeField || selectedScope != null
     val scopedConflicts = lessons.filter { it.state == "APPROVED" || it.state == "PROPOSED" }
         .groupBy { Triple(it.scopePlatform, it.accountId, it.conversationId) }
         .values.flatMap { group ->
@@ -85,6 +99,18 @@ fun ProfessorTrainingChatScreen(
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("মালিকের নির্দেশনা", style = MaterialTheme.typography.titleMedium)
+                    Text("Lesson scope (সব ফাঁকা রাখলে Global)", style = MaterialTheme.typography.labelMedium)
+                    OutlinedTextField(
+                        value = scopePlatform,
+                        onValueChange = { scopePlatform = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("Platform (যেমন WHATSAPP_PERSONAL)") },
+                        supportingText = { Text(MessagingPlatform.values().joinToString(", ") { it.name }) },
+                        singleLine = true,
+                    )
+                    OutlinedTextField(value = scopeAccountId, onValueChange = { scopeAccountId = it }, modifier = Modifier.fillMaxWidth(), label = { Text("Account ID (Global হলে ফাঁকা রাখুন)") }, singleLine = true)
+                    OutlinedTextField(value = scopeConversationId, onValueChange = { scopeConversationId = it }, modifier = Modifier.fillMaxWidth(), label = { Text("Conversation / Contact ID (Global হলে ফাঁকা রাখুন)") }, singleLine = true)
+                    if (!scopeIsValid) Text("Scoped lesson-এর জন্য সঠিক platform, account ID ও conversation/contact ID—তিনটিই দিতে হবে।", color = MaterialTheme.colorScheme.error)
                     OutlinedTextField(
                         value = message,
                         onValueChange = { message = it },
@@ -93,8 +119,8 @@ fun ProfessorTrainingChatScreen(
                         minLines = 2,
                     )
                     Button(
-                        onClick = { onTeach(message.trim()); message = "" },
-                        enabled = aiCoreReady && message.isNotBlank(),
+                        onClick = { onTeach(message.trim(), selectedScope); message = "" },
+                        enabled = aiCoreReady && message.isNotBlank() && scopeIsValid,
                     ) { Text("প্রস্তাব তৈরি") }
                 }
             }
@@ -174,8 +200,8 @@ fun ProfessorTrainingChatScreen(
                         label = { Text("Optional proposed lesson") },
                     )
                     OutlinedButton(
-                        onClick = { onSimulate(sample.trim(), proposedRule.takeIf(String::isNotBlank)); },
-                        enabled = aiCoreReady && sample.isNotBlank(),
+                        onClick = { onSimulate(sample.trim(), proposedRule.takeIf(String::isNotBlank), selectedScope) },
+                        enabled = aiCoreReady && sample.isNotBlank() && scopeIsValid,
                     ) { Text("Preview only — never send") }
                     simulationPreview?.let { Text(it, style = MaterialTheme.typography.bodyLarge) }
                     Text("এই simulation কোনো WhatsApp, Messenger বা Instagram message পাঠায় না।", style = MaterialTheme.typography.bodySmall)
