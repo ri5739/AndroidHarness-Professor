@@ -112,5 +112,6 @@ jobs:
           profile: pixel_2
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
+          disable-linux-hardware-acceleration: false
           emulator-boot-timeout: 900
           script: ./gradlew connectedDebugAndroidTest
