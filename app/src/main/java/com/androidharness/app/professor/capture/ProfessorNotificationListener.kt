@@ -14,8 +14,9 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 /**
- * Opt-in notification capture. Captured notifications are only queued for draft generation;
- * this service never sends or opens messages.
+ * Opt-in notification capture. Ordinary replies can be delivered only through a
+ * free-form RemoteInput action explicitly supplied by the messaging app. No UI
+ * automation, accessibility scraping, or guessed send endpoint is used.
  */
 class ProfessorNotificationListener : NotificationListenerService() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -39,6 +40,8 @@ class ProfessorNotificationListener : NotificationListenerService() {
         // conservative local default until the user explicitly maps an account.
         val conversationScope = ConversationScope(platform, ProfessorNotificationIdentity.accountScope(sbn.packageName), conversationId)
         val messageId = ProfessorNotificationIdentity.messageId(sbn.packageName, conversationId, captured.body, sbn.postTime)
+        // Save only the app-provided inline reply action; absence of one means no auto-send.
+        ProfessorNotificationReplyActions.register(messageId, notification)
         val incoming = IncomingMessage(messageId, conversationScope, conversationName.take(256), captured.body, sbn.postTime)
         scope.launch {
             val app = applicationContext as? HarnessApp ?: return@launch
@@ -47,5 +50,4 @@ class ProfessorNotificationListener : NotificationListenerService() {
             }
         }
     }
-
 }
