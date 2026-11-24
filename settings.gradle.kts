@@ -1,8 +1,9 @@
 pluginManagement {
     repositories {
+        // Resolve Kotlin plugin marker artifacts from the Plugin Portal first.
+        gradlePluginPortal()
         google()
         mavenCentral()
-        gradlePluginPortal()
     }
 }
 dependencyResolutionManagement {
