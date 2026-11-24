@@ -6,15 +6,16 @@ import androidx.work.WorkerParameters
 import com.androidharness.app.HarnessApp
 import com.androidharness.app.llm.RequestOptions
 import com.androidharness.app.llm.effectiveApiKey
-import com.androidharness.app.professor.capture.ProfessorNotificationReplyActions
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 
 /**
- * Processes incoming messages with AndroidHarness AI Core. Ordinary replies are
- * sent only through the exact inline-reply action supplied by the source notification.
- * Sensitive disclosures remain held for owner review; a safe acknowledgement may
- * be sent so the rest of the conversation can continue.
+ * Generates and persists reply drafts using AndroidHarness AI Core.
+ *
+ * Deliberately does not send messages. Sending stays disabled until a platform adapter
+ * has an explicit capability declaration, recipient/scope verification, outgoing privacy
+ * checks, rate limiting, emergency-stop/human-takeover checks, and a verifiable result.
+ * A notification PendingIntent succeeding is not proof of delivery.
  */
 class ProfessorWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
@@ -54,7 +55,7 @@ class ProfessorWorker(context: Context, params: WorkerParameters) : CoroutineWor
                     )
                 },
                 promptProvider = ProfessorPromptProvider { messageScope, incoming ->
-                    "You are Agent Professor, a private messaging assistant. Reply naturally and directly to ordinary messages; ordinary conversation must not wait for owner review. " +
+                    "You are Agent Professor, a private personal messaging assistant. Reply naturally and directly to ordinary messages. " +
                         "Default to Bengali. Never disclose the owner's personal, private, financial, authentication, or confidential information without explicit owner approval. " +
                         "If asked for such information, do not guess or reveal it: say briefly that you will confirm with the owner, then continue answering any safe, ordinary part of the message. " +
                         "Do not let a held private-information request pause later ordinary messages in this conversation. " +
@@ -69,26 +70,9 @@ class ProfessorWorker(context: Context, params: WorkerParameters) : CoroutineWor
                 if (draft == null) {
                     return if (hasPendingMessages(container, scope)) Result.retry() else Result.success()
                 }
-
-                when {
-                    draft.status == DraftStatus.PENDING && draft.riskFlags.isEmpty() -> {
-                        val sent = ProfessorNotificationReplyActions.send(
-                            applicationContext, draft.inReplyToMessageId, draft.text,
-                        )
-                        if (sent) {
-                            container.professorPersistence.setDraftStatus(draft.draftId, DraftStatus.SENT)
-                        }
-                    }
-                    RiskFlag.SENSITIVE_DATA in draft.riskFlags -> {
-                        val assessment = ProfessorOutgoingReplyPolicy.assess(draft.text)
-                        val safeAcknowledgement =
-                            ProfessorOutgoingReplyPolicy.safeReplyForApprovalRequired(assessment)
-                                ?: ProfessorPrivateRequestClassifier.SAFE_ACKNOWLEDGEMENT
-                        // Only a safe acknowledgement is sent. The private reply remains held.
-                        ProfessorNotificationReplyActions.send(
-                            applicationContext, draft.inReplyToMessageId, safeAcknowledgement,
-                        )
-                    }
+                // Draft remains persisted for owner review. No external send occurs here.
+                if (draft.text.isBlank()) {
+                    container.professorPersistence.setDraftStatus(draft.draftId, DraftStatus.FAILED)
                 }
             }
             return if (hasPendingMessages(container, scope)) Result.retry() else Result.success()

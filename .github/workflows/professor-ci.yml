@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - professor/integration
+      - professor/phase1-completion
   pull_request:
     branches:
       - main
+      - professor/integration
   workflow_dispatch:
 
 permissions:

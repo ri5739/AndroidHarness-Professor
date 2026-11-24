@@ -168,3 +168,28 @@ Commits for this increment:
 - `c9ad1694` — layout import correction.
 
 APK build is being generated from the latest branch head; no claim of successful artifact creation until the workflow publishes it.
+
+
+## Phase 1 completion batch — safety baseline
+- [x] Created isolated work branch `professor/phase1-completion` from `professor/integration`.
+- [x] Corrected a critical implementation/documentation mismatch: the background worker previously sent drafts directly through a notification `PendingIntent`, despite the documented release boundary saying platform sending was not enabled.
+- [x] Worker now generates and persists drafts only. External sending is disabled in background processing until a real adapter and all release gates are implemented and verified.
+- [ ] Owner-approved manual send path must also be routed through the same send gate and must report an honest outcome; a successful `PendingIntent.send()` is not delivery confirmation.
+- [ ] Remaining Phase 1 items (identity mapping persistence/UI, reliable bidirectional history sources, Option C behavior retrieval, contact memory, durable audit/emergency stop, rate limits, attachment capability handling, platform matrix, tests and device verification) remain open.
+- **Verification:** this change is committed as `267b47c3e281ac305c70e474b01639e62bb3412d`. CI/build verification is pending; do not call this batch complete yet.
+
+
+## Phase 1 safety follow-up — 2026-11-24
+- [x] Disabled background auto-send in `ProfessorWorker`; replies remain persisted as drafts.
+- [x] Removed the Draft Management screen's unverified "Approve & send" action. Owner can edit, mark reviewed, or delete drafts; review does not send.
+- [x] Updated Professor Controls copy to distinguish notification capture from account connection and sending.
+- [x] Expanded `.github/workflows/professor-ci.yml` triggers to include the Phase 1 branch and PRs targeting `professor/integration`.
+- [ ] CI run for the Phase 1 branch is not yet visible/confirmed. The repository Actions endpoint currently returns no runs for this branch; do not claim build/test success.
+- [ ] The remaining Phase 1 feature work and physical-device checks are still open.
+
+
+## CI diagnosis and compile correction — 2026-11-24
+- [x] GitHub Actions became visible for commit `67d29444`; the JVM test job reached Kotlin compilation and exposed an unresolved `ProfessorNotificationPermissionPanel` reference in `ProfessorControlScreen.kt`.
+- [x] Replaced that missing component call with an inline notification-access status and Settings button; fix committed as `d6bbc711`.
+- [ ] The failing run belongs to the earlier `67d29444` commit and does not validate the fix. A fresh CI run for `d6bbc711` has not yet appeared; build/test status remains unverified.
+- [ ] Existing account/contact identity, conversation history, send adapter, delivery verification, durable rate-limit/emergency-stop state, and Option C revision behavior remain incomplete. Existing domain policy classes are not equivalent to end-to-end integration.
