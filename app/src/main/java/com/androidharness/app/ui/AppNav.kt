@@ -1055,9 +1055,9 @@ fun AppNav(container: AppContainer) {
                         history = trainingHistory,
                         lessons = trainingLessons,
                         aiCoreReady = trainingAiReady,
-                        onTeach = { message ->
+                        onTeach = { message, trainingScope ->
                             scope.launch {
-                                runCatching { container.createProfessorTrainingCoach().teach(message) }
+                                runCatching { container.createProfessorTrainingCoach().teach(message, trainingScope) }
                                     .onSuccess { trainingAiReady = true }
                                     .onFailure {
                                         trainingAiReady = false
@@ -1078,11 +1078,11 @@ fun AppNav(container: AppContainer) {
                         onDelete = { id -> scope.launch { container.professorTraining.delete(id) } },
                         onReset = { scope.launch { container.professorTraining.resetAllLessons() } },
                         onClearHistory = { scope.launch { container.professorTraining.clearTrainingHistory() } },
-                        onSimulate = { sample, rule ->
+                        onSimulate = { sample, rule, trainingScope ->
                             scope.launch {
                                 runCatching {
                                     container.createProfessorTrainingCoach().simulate(
-                                        scope = com.androidharness.app.professor.ConversationScope(
+                                        scope = trainingScope ?: com.androidharness.app.professor.ConversationScope(
                                             com.androidharness.app.professor.MessagingPlatform.WHATSAPP_PERSONAL,
                                             "training-preview",
                                             "training-preview",
