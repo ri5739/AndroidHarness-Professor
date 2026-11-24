@@ -41,16 +41,19 @@ class ProfessorOrchestrator(
             val outgoingRiskFlags = if (outgoingPrivacy.decision == OutgoingReplyDecision.OWNER_APPROVAL_REQUIRED) {
                 setOf(RiskFlag.SENSITIVE_DATA)
             } else emptySet()
+            // Sensitive content in an INCOMING question must not block a safe acknowledgement.
+            // Only phishing-like incoming content is independently held for review.
+            val incomingRiskFlags = com.androidharness.app.professor.capture.ProfessorNotificationRiskClassifier
+                .classify(incoming.text) - RiskFlag.SENSITIVE_DATA
+            val riskFlags = outgoingRiskFlags + incomingRiskFlags
             val draft = ReplyDraft(
                 draftId = stableDraftId(scope, incoming.messageId),
                 scope = scope,
                 inReplyToMessageId = incoming.messageId,
                 text = reply,
-                status = DraftStatus.NEEDS_REVIEW,
-                riskFlags = setOf(RiskFlag.LOW_CONFIDENCE) +
-                    com.androidharness.app.professor.capture.ProfessorNotificationRiskClassifier.classify(incoming.text) +
-                    outgoingRiskFlags,
-                confidence = REVIEW_ONLY_CONFIDENCE,
+                status = if (riskFlags.isEmpty()) DraftStatus.PENDING else DraftStatus.NEEDS_REVIEW,
+                riskFlags = riskFlags,
+                confidence = if (riskFlags.isEmpty()) 1.0f else 0.50f,
             )
             persistence.saveDraft(draft)
             check(persistence.complete(scope, incoming.messageId)) {
@@ -63,10 +66,6 @@ class ProfessorOrchestrator(
             persistence.retry(scope, incoming.messageId, failure.message ?: failure.javaClass.simpleName)
             return null
         }
-    }
-
-    companion object {
-        const val REVIEW_ONLY_CONFIDENCE = 0.50f
     }
 }
 
