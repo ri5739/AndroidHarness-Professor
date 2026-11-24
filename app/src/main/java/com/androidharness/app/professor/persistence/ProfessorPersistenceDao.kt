@@ -74,8 +74,14 @@ data class ProfessorDraftEntity(@PrimaryKey val draftId:String,val platform:Stri
  @Insert(onConflict = OnConflictStrategy.ABORT)
  suspend fun insertTrainingTurn(turn: ProfessorTrainingTurnEntity)
 
- @Query("SELECT * FROM professor_training_turns ORDER BY createdAt, turnId")
+ @Query("SELECT * FROM (SELECT * FROM professor_training_turns ORDER BY createdAt DESC, turnId DESC LIMIT 50) ORDER BY createdAt, turnId")
  fun trainingTurnsFlow(): Flow<List<ProfessorTrainingTurnEntity>>
+
+ @Query("SELECT * FROM professor_training_turns ORDER BY createdAt DESC, turnId DESC LIMIT :limit OFFSET :offset")
+ suspend fun trainingTurnsPage(limit: Int, offset: Int): List<ProfessorTrainingTurnEntity>
+
+ @Query("SELECT COUNT(*) FROM professor_training_turns")
+ suspend fun trainingTurnCount(): Int
  @Query("SELECT * FROM professor_training_turns ORDER BY createdAt DESC, turnId DESC LIMIT 32")
  suspend fun recentTrainingTurns(): List<ProfessorTrainingTurnEntity>
  @Query("SELECT * FROM professor_training_turns WHERE (scopePlatform IS NULL AND accountId IS NULL AND conversationId IS NULL) OR (scopePlatform=:platform AND accountId=:accountId AND conversationId=:conversationId) ORDER BY createdAt DESC, turnId DESC LIMIT 32")

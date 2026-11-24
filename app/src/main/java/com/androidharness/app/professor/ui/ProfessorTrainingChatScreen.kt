@@ -36,6 +36,8 @@ import com.androidharness.app.professor.MessagingPlatform
 @Composable
 fun ProfessorTrainingChatScreen(
     history: List<ProfessorTrainingTurnEntity>,
+    historyHasMore: Boolean,
+    onLoadMoreHistory: () -> Unit,
     lessons: List<ProfessorTrainingLessonEntity>,
     auditEvents: List<ProfessorTrainingAuditEntity>,
     onTeach: (String, ConversationScope?) -> Unit,
@@ -144,8 +146,15 @@ fun ProfessorTrainingChatScreen(
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(10.dp)) {
                     Text(if (turn.role == "OWNER") "আপনি" else "Training Assistant", style = MaterialTheme.typography.labelMedium)
-                    Text(if (turn.scopePlatform == null) "Global training" else "${turn.scopePlatform} / ${turn.accountId} / ${turn.conversationId}", style = MaterialTheme.typography.labelSmall)
+                    Text(if (turn.scopePlatform == null) "Global training" else turn.scopePlatform + " / " + turn.accountId + " / " + turn.conversationId, style = MaterialTheme.typography.labelSmall)
                     Text(turn.text)
+                }
+            }
+        }
+        if (historyHasMore) {
+            item {
+                OutlinedButton(onClick = onLoadMoreHistory, modifier = Modifier.fillMaxWidth()) {
+                    Text("Load older training history")
                 }
             }
         }

@@ -112,6 +112,25 @@ class ProfessorTrainingPersistenceTest {
     }
 
     @Test
+    fun trainingHistoryPagesReturnOlderTurnsWithoutOverlap() = runBlocking {
+        repeat(125) { index ->
+            dao.insertTrainingTurn(turn("page-$index", null, null, null, index.toLong()))
+        }
+
+        val newest = dao.trainingTurnsPage(limit = 50, offset = 0)
+        val older = dao.trainingTurnsPage(limit = 50, offset = 50)
+        val oldest = dao.trainingTurnsPage(limit = 50, offset = 100)
+
+        assertEquals(50, newest.size)
+        assertEquals(50, older.size)
+        assertEquals(25, oldest.size)
+        assertTrue(newest.map { it.turnId }.toSet().intersect(older.map { it.turnId }.toSet()).isEmpty())
+        assertTrue(older.map { it.turnId }.toSet().intersect(oldest.map { it.turnId }.toSet()).isEmpty())
+        assertEquals("page-124", newest.first().turnId)
+        assertEquals("page-0", oldest.last().turnId)
+    }
+
+    @Test
     fun trainingHistoryOnlyIncludesGlobalAndExactConversationScope() = runBlocking {
         dao.insertTrainingTurn(turn("global", null, null, null, 1L))
         dao.insertTrainingTurn(turn("matching", "WHATSAPP", "account-a", "chat-a", 2L))

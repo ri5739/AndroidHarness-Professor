@@ -1047,14 +1047,32 @@ fun AppNav(container: AppContainer) {
                     androidx.compose.runtime.LaunchedEffect(container) {
                         trainingAiReady = runCatching { container.createProfessorTrainingCoach() }.isSuccess
                     }
-                    val trainingHistory by container.professorTraining.conversationHistory()
+                    val recentTrainingHistory by container.professorTraining.conversationHistory()
                         .collectAsStateWithLifecycle(initialValue = emptyList())
+                    var olderTrainingHistory by remember(container) { mutableStateOf(emptyList<com.androidharness.app.professor.persistence.ProfessorTrainingTurnEntity>()) }
+                    var trainingHistoryHasMore by remember(container) { mutableStateOf(true) }
+                    val trainingHistory = remember(recentTrainingHistory, olderTrainingHistory) {
+                        (olderTrainingHistory + recentTrainingHistory).distinctBy { it.turnId }
+                            .sortedWith(compareBy<com.androidharness.app.professor.persistence.ProfessorTrainingTurnEntity> { it.createdAt }.thenBy { it.turnId })
+                    }
+                    androidx.compose.runtime.LaunchedEffect(recentTrainingHistory.size, olderTrainingHistory.size) {
+                        trainingHistoryHasMore = container.professorTraining.trainingHistoryCount() > trainingHistory.size
+                    }
                     val trainingLessons by container.professorTraining.lessons()
                         .collectAsStateWithLifecycle(initialValue = emptyList())
                     val trainingAuditEvents by container.professorTraining.allAuditHistory()
                         .collectAsStateWithLifecycle(initialValue = emptyList())
                     com.androidharness.app.professor.ui.ProfessorTrainingChatScreen(
                         history = trainingHistory,
+                        historyHasMore = trainingHistoryHasMore,
+                        onLoadMoreHistory = {
+                            scope.launch {
+                                val offset = recentTrainingHistory.size + olderTrainingHistory.size
+                                val page = container.professorTraining.historyPage(offset = offset)
+                                olderTrainingHistory = (olderTrainingHistory + page).distinctBy { it.turnId }
+                                trainingHistoryHasMore = page.size == 50
+                            }
+                        },
                         lessons = trainingLessons,
                         auditEvents = trainingAuditEvents,
                         aiCoreReady = trainingAiReady,
@@ -1083,7 +1101,10 @@ fun AppNav(container: AppContainer) {
                         } } },
                         onDelete = { id -> scope.launch { container.professorTraining.delete(id) } },
                         onReset = { scope.launch { container.professorTraining.resetAllLessons() } },
-                        onClearHistory = { scope.launch { container.professorTraining.clearTrainingHistory() } },
+                        onClearHistory = {
+                            olderTrainingHistory = emptyList()
+                            scope.launch { container.professorTraining.clearTrainingHistory(); trainingHistoryHasMore = false }
+                        },
                         onSimulate = { sample, rule, trainingScope ->
                             scope.launch {
                                 runCatching {

@@ -18,7 +18,15 @@ class ProfessorTrainingRepository(
 ) {
     fun lessons(): Flow<List<ProfessorTrainingLessonEntity>> = dao.trainingLessonsFlow()
 
+    /** The live window is the newest 50 turns; older turns are fetched in explicit pages. */
     fun conversationHistory(): Flow<List<ProfessorTrainingTurnEntity>> = dao.trainingTurnsFlow()
+
+    suspend fun historyPage(limit: Int = 50, offset: Int): List<ProfessorTrainingTurnEntity> {
+        require(limit in 1..100 && offset >= 0)
+        return dao.trainingTurnsPage(limit, offset).asReversed()
+    }
+
+    suspend fun trainingHistoryCount(): Int = dao.trainingTurnCount()
 
     /** Immutable lesson change history; deletion never erases its audit trail. */
     fun auditHistory(lessonId: String): Flow<List<ProfessorTrainingAuditEntity>> =
