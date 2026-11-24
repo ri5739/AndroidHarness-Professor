@@ -259,6 +259,7 @@ dependencies {
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.core)
     androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation("androidx.sqlite:sqlite-framework:2.6.2")
 }
 
 // The hash is bundled in the base app, so neither a changed release manifest nor
