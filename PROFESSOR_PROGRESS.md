@@ -186,3 +186,10 @@ APK build is being generated from the latest branch head; no claim of successful
 - [x] Expanded `.github/workflows/professor-ci.yml` triggers to include the Phase 1 branch and PRs targeting `professor/integration`.
 - [ ] CI run for the Phase 1 branch is not yet visible/confirmed. The repository Actions endpoint currently returns no runs for this branch; do not claim build/test success.
 - [ ] The remaining Phase 1 feature work and physical-device checks are still open.
+
+
+## CI diagnosis and compile correction — 2026-11-24
+- [x] GitHub Actions became visible for commit `67d29444`; the JVM test job reached Kotlin compilation and exposed an unresolved `ProfessorNotificationPermissionPanel` reference in `ProfessorControlScreen.kt`.
+- [x] Replaced that missing component call with an inline notification-access status and Settings button; fix committed as `d6bbc711`.
+- [ ] The failing run belongs to the earlier `67d29444` commit and does not validate the fix. A fresh CI run for `d6bbc711` has not yet appeared; build/test status remains unverified.
+- [ ] Existing account/contact identity, conversation history, send adapter, delivery verification, durable rate-limit/emergency-stop state, and Option C revision behavior remain incomplete. Existing domain policy classes are not equivalent to end-to-end integration.
