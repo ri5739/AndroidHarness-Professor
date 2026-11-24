@@ -1,6 +1,7 @@
 package com.androidharness.app.professor.persistence
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
+import java.util.UUID
 
 data class ProfessorScopeRow(val platform: String, val accountId: String, val conversationId: String)
 
@@ -27,6 +28,17 @@ data class ProfessorTrainingTurnEntity(
     val scopePlatform: String? = null,
     val accountId: String? = null,
     val conversationId: String? = null,
+)
+
+@Entity(tableName = "professor_training_audit", indices = [Index("lessonId"), Index("occurredAt")])
+data class ProfessorTrainingAuditEntity(
+ @PrimaryKey val auditId: String,
+ val lessonId: String,
+ val action: String,
+ val revision: Int,
+ val ruleBefore: String,
+ val ruleAfter: String,
+ val occurredAt: Long,
 )
 
 @Entity(tableName="professor_incoming", primaryKeys=["platform","accountId","conversationId","messageId"], indices=[Index(value=["status","nextRetryAt","receivedAt"])])
@@ -74,6 +86,55 @@ data class ProfessorDraftEntity(@PrimaryKey val draftId:String,val platform:Stri
 
  @Insert(onConflict=OnConflictStrategy.ABORT)
  suspend fun insertTrainingLesson(lesson: ProfessorTrainingLessonEntity)
+
+ @Insert(onConflict = OnConflictStrategy.ABORT)
+ suspend fun insertTrainingAudit(event: ProfessorTrainingAuditEntity)
+
+ @Query("SELECT * FROM professor_training_audit WHERE lessonId=:lessonId ORDER BY occurredAt DESC, auditId DESC")
+ fun trainingAuditFlow(lessonId: String): Flow<List<ProfessorTrainingAuditEntity>>
+
+ @Transaction
+ suspend fun approveTrainingLessonWithAudit(id: String, now: Long): Int {
+  val before = trainingLesson(id) ?: return 0
+  val changed = approveTrainingLesson(id, now)
+  if (changed == 1) insertTrainingAudit(ProfessorTrainingAuditEntity(UUID.randomUUID().toString(), id, "APPROVED", before.revision, before.rule, before.rule, now))
+  return changed
+ }
+
+ @Transaction
+ suspend fun updateTrainingLessonStateWithAudit(id: String, state: String, now: Long): Int {
+  val before = trainingLesson(id) ?: return 0
+  val changed = updateTrainingLessonState(id, state, now)
+  if (changed == 1) insertTrainingAudit(ProfessorTrainingAuditEntity(UUID.randomUUID().toString(), id, state, before.revision, before.rule, before.rule, now))
+  return changed
+ }
+
+ @Transaction
+ suspend fun editTrainingLessonWithAudit(id: String, rule: String, now: Long): Int {
+  val before = trainingLesson(id) ?: return 0
+  if (before.state == "REJECTED") return 0
+  val changed = editTrainingLesson(id, rule, now)
+  if (changed == 1) insertTrainingAudit(ProfessorTrainingAuditEntity(UUID.randomUUID().toString(), id, "EDITED", before.revision + 1, before.rule, rule, now))
+  return changed
+ }
+
+ @Transaction
+ suspend fun deleteTrainingLessonWithAudit(id: String, now: Long) {
+  val before = trainingLesson(id) ?: return
+  insertTrainingAudit(ProfessorTrainingAuditEntity(UUID.randomUUID().toString(), id, "DELETED", before.revision, before.rule, "", now))
+  deleteTrainingLesson(id)
+ }
+
+ @Transaction
+ suspend fun clearTrainingLessonsWithAudit(now: Long) {
+  trainingLessonsSnapshot().forEach { lesson ->
+   insertTrainingAudit(ProfessorTrainingAuditEntity(UUID.randomUUID().toString(), lesson.lessonId, "RESET", lesson.revision, lesson.rule, "", now))
+  }
+  clearTrainingLessons()
+ }
+
+ @Query("SELECT * FROM professor_training_lessons")
+ suspend fun trainingLessonsSnapshot(): List<ProfessorTrainingLessonEntity>
 
  @Query("SELECT * FROM professor_training_lessons ORDER BY updatedAt DESC")
  fun trainingLessonsFlow(): Flow<List<ProfessorTrainingLessonEntity>>
