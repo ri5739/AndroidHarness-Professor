@@ -17,6 +17,7 @@ import com.androidharness.app.professor.persistence.ProfessorIncomingEntity
 import com.androidharness.app.professor.persistence.ProfessorDraftEntity
 import com.androidharness.app.professor.persistence.ProfessorTrainingLessonEntity
 import com.androidharness.app.professor.persistence.ProfessorTrainingTurnEntity
+import com.androidharness.app.professor.persistence.ProfessorTrainingAuditEntity
 import com.androidharness.app.professor.persistence.ProfessorPersistenceDao
 import kotlinx.coroutines.flow.Flow
 
@@ -854,8 +855,9 @@ interface HarnessDao {
         ProfessorDraftEntity::class,
         ProfessorTrainingLessonEntity::class,
         ProfessorTrainingTurnEntity::class,
+        ProfessorTrainingAuditEntity::class,
     ],
-    version = 32,
+    version = 33,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -863,6 +865,13 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun professorPersistenceDao(): ProfessorPersistenceDao
 
     companion object {
+        val MIGRATION_32_33 = object : androidx.room.migration.Migration(32, 33) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS professor_training_audit (auditId TEXT NOT NULL PRIMARY KEY, lessonId TEXT NOT NULL, action TEXT NOT NULL, revision INTEGER NOT NULL, ruleBefore TEXT NOT NULL, ruleAfter TEXT NOT NULL, occurredAt INTEGER NOT NULL)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_professor_training_audit_lessonId ON professor_training_audit(lessonId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_professor_training_audit_occurredAt ON professor_training_audit(occurredAt)")
+            }
+        }
         val MIGRATION_31_32 = object : androidx.room.migration.Migration(31, 32) {
             override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE professor_training_turns ADD COLUMN scopePlatform TEXT")
