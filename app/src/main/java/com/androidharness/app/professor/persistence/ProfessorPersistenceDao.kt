@@ -60,6 +60,8 @@ data class ProfessorDraftEntity(@PrimaryKey val draftId:String,val platform:Stri
 
  @Query("SELECT * FROM professor_training_turns ORDER BY createdAt, turnId")
  fun trainingTurnsFlow(): Flow<List<ProfessorTrainingTurnEntity>>
+ @Query("SELECT * FROM professor_training_turns ORDER BY createdAt DESC, turnId DESC LIMIT 32")
+ suspend fun recentTrainingTurns(): List<ProfessorTrainingTurnEntity>
 
  @Query("DELETE FROM professor_training_turns")
  suspend fun clearTrainingTurns()
