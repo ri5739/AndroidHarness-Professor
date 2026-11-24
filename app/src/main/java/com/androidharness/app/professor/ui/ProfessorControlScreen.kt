@@ -14,6 +14,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -24,7 +25,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.androidharness.app.AppContainer
 import com.androidharness.app.professor.DraftStatus
-import com.androidharness.app.professor.persistence.ProfessorPersistence
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProfessorControlScreen(
@@ -32,6 +33,7 @@ fun ProfessorControlScreen(
     onBack: () -> Unit,
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
     var notificationAccess by remember {
         mutableStateOf(
@@ -87,17 +89,17 @@ fun ProfessorControlScreen(
         ProfessorDraftManagement(
             drafts = drafts,
             onSaveEdit = { draft, text ->
-                kotlinx.coroutines.MainScope().launch {
+                coroutineScope.launch {
                     container.professorPersistence.saveDraft(draft.copy(text = text))
                 }
             },
             onMarkReviewed = { draft ->
-                kotlinx.coroutines.MainScope().launch {
+                coroutineScope.launch {
                     container.professorPersistence.setDraftStatus(draft.draftId, DraftStatus.READY)
                 }
             },
             onDelete = { draft ->
-                kotlinx.coroutines.MainScope().launch {
+                coroutineScope.launch {
                     container.professorPersistence.deleteDraft(draft.draftId)
                 }
             },
