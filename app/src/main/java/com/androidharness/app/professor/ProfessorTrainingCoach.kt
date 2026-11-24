@@ -90,7 +90,7 @@ class ProfessorTrainingCoach(
             append("Do not call tools, platform adapters, or send anything. ")
             append("Never disclose secrets or confidential owner data. ")
             if (rules.isNotBlank()) append("\nOwner-approved matching lessons and optional proposed rule:\n").append(rules)
-        }
+        })
         val generated = try {
             ai.generateReply(
                 prompt,
