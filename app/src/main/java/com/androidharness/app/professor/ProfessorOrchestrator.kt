@@ -1,6 +1,5 @@
 package com.androidharness.app.professor
 
-import com.androidharness.app.professor.persistence.ProfessorPersistence
 import kotlinx.coroutines.CancellationException
 import java.security.MessageDigest
 
@@ -41,11 +40,11 @@ class ProfessorOrchestrator(
             val outgoingRiskFlags = if (outgoingPrivacy.decision == OutgoingReplyDecision.OWNER_APPROVAL_REQUIRED) {
                 setOf(RiskFlag.SENSITIVE_DATA)
             } else emptySet()
-            // Sensitive content in an INCOMING question must not block a safe acknowledgement.
-            // Only phishing-like incoming content is independently held for review.
             val incomingRiskFlags = com.androidharness.app.professor.capture.ProfessorNotificationRiskClassifier
                 .classify(incoming.text) - RiskFlag.SENSITIVE_DATA
-            val riskFlags = outgoingRiskFlags + incomingRiskFlags
+            val privateRequest = ProfessorPrivateRequestClassifier.isPrivateInformationRequest(incoming.text)
+            val riskFlags = outgoingRiskFlags + incomingRiskFlags +
+                if (privateRequest) setOf(RiskFlag.SENSITIVE_DATA) else emptySet()
             val draft = ReplyDraft(
                 draftId = stableDraftId(scope, incoming.messageId),
                 scope = scope,
