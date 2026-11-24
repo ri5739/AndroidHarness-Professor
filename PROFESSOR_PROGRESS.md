@@ -177,3 +177,12 @@ APK build is being generated from the latest branch head; no claim of successful
 - [ ] Owner-approved manual send path must also be routed through the same send gate and must report an honest outcome; a successful `PendingIntent.send()` is not delivery confirmation.
 - [ ] Remaining Phase 1 items (identity mapping persistence/UI, reliable bidirectional history sources, Option C behavior retrieval, contact memory, durable audit/emergency stop, rate limits, attachment capability handling, platform matrix, tests and device verification) remain open.
 - **Verification:** this change is committed as `267b47c3e281ac305c70e474b01639e62bb3412d`. CI/build verification is pending; do not call this batch complete yet.
+
+
+## Phase 1 safety follow-up — 2026-11-24
+- [x] Disabled background auto-send in `ProfessorWorker`; replies remain persisted as drafts.
+- [x] Removed the Draft Management screen's unverified "Approve & send" action. Owner can edit, mark reviewed, or delete drafts; review does not send.
+- [x] Updated Professor Controls copy to distinguish notification capture from account connection and sending.
+- [x] Expanded `.github/workflows/professor-ci.yml` triggers to include the Phase 1 branch and PRs targeting `professor/integration`.
+- [ ] CI run for the Phase 1 branch is not yet visible/confirmed. The repository Actions endpoint currently returns no runs for this branch; do not claim build/test success.
+- [ ] The remaining Phase 1 feature work and physical-device checks are still open.
