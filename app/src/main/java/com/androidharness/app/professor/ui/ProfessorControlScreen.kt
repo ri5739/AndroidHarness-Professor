@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -80,14 +81,28 @@ fun ProfessorControlScreen(
             "Incoming notifications can be captured when enabled. Replies are generated as drafts; external sending remains disabled until platform adapters and safety verification are complete.",
             style = MaterialTheme.typography.bodyMedium,
         )
-        ProfessorNotificationPermissionPanel(
-            granted = notificationAccess,
-            onRequestPermission = {
-                runCatching {
-                    context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-                }
-            },
-        )
+        if (notificationAccess) {
+            Text(
+                "Notification access is enabled. Incoming notification capture can work for supported notifications.",
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        } else {
+            Text(
+                "Notification access is not enabled. Turn it on to capture supported incoming notifications.",
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Button(
+                onClick = {
+                    runCatching {
+                        context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                    }
+                },
+            ) {
+                Text("Open notification access settings")
+            }
+        }
         Text("Platform connections", style = MaterialTheme.typography.titleLarge)
         Text(
             "These switches only control incoming notification capture. They do not connect an account or enable sending.",
