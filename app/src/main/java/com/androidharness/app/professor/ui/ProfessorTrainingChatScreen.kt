@@ -68,15 +68,21 @@ fun ProfessorTrainingChatScreen(
         )
     }.getOrNull()
     val scopeIsValid = !hasAnyScopeField || selectedScope != null
-    val scopedConflicts = lessons.filter { it.state == "APPROVED" || it.state == "PROPOSED" }
-        .groupBy { Triple(it.scopePlatform, it.accountId, it.conversationId) }
-        .values.flatMap { group ->
-            ProfessorTrainingConflictDetector.findConflicts(group.map { it.rule }).mapNotNull { conflict ->
-                val first = group.firstOrNull { it.rule == conflict.firstRule }
-                val second = group.firstOrNull { it.rule == conflict.secondRule }
-                if (first != null && second != null) first to second else null
-            }
+    val activeLessons = lessons.filter { it.state == "APPROVED" || it.state == "PROPOSED" }
+    val globalLessons = activeLessons.filter { it.scopePlatform == null && it.accountId == null && it.conversationId == null }
+    val effectiveRuleGroups = buildList {
+        if (globalLessons.isNotEmpty()) add(globalLessons)
+        activeLessons.filter { it.scopePlatform != null }
+            .groupBy { Triple(it.scopePlatform, it.accountId, it.conversationId) }
+            .values.forEach { scoped -> add(globalLessons + scoped) }
+    }
+    val scopedConflicts = effectiveRuleGroups.flatMap { group ->
+        ProfessorTrainingConflictDetector.findConflicts(group.map { it.rule }).mapNotNull { conflict ->
+            val first = group.firstOrNull { it.rule == conflict.firstRule }
+            val second = group.firstOrNull { it.rule == conflict.secondRule }
+            if (first != null && second != null) first to second else null
         }
+    }.distinctBy { it.first.lessonId to it.second.lessonId }
 
     LazyColumn(
         modifier = modifier.padding(16.dp),
