@@ -20,15 +20,34 @@ class ProfessorTrainingRepository(
 
     fun conversationHistory(): Flow<List<ProfessorTrainingTurnEntity>> = dao.trainingTurnsFlow()
     /** Bounded, chronological context for the next owner-training turn. */
-    suspend fun recentConversationHistory(): List<ProfessorTrainingTurnEntity> =
-        dao.recentTrainingTurns().asReversed().filterNot { ProfessorTrainingSecretPolicy.containsSecret(it.text) }
+    suspend fun recentConversationHistory(scope: ConversationScope? = null): List<ProfessorTrainingTurnEntity> =
+        dao.recentTrainingTurnsForScope(
+            platform = scope?.platform?.name,
+            accountId = scope?.accountId,
+            conversationId = scope?.conversationId,
+        ).asReversed().filterNot { ProfessorTrainingSecretPolicy.containsSecret(it.text) }
 
-    suspend fun appendTrainingTurn(role: String, text: String, createdAt: Long = now()): String {
+    suspend fun appendTrainingTurn(
+        role: String,
+        text: String,
+        scope: ConversationScope? = null,
+        createdAt: Long = now(),
+    ): String {
         require(role == "OWNER" || role == "ASSISTANT") { "Training Chat accepts owner and assistant turns only" }
         require(text.isNotBlank()) { "Training message cannot be blank" }
         require(!ProfessorTrainingSecretPolicy.containsSecret(text)) { "Credential-like content cannot be stored in Training Chat history" }
         val id = newId()
-        dao.insertTrainingTurn(ProfessorTrainingTurnEntity(id, role, text.trim(), createdAt))
+        dao.insertTrainingTurn(
+            ProfessorTrainingTurnEntity(
+                turnId = id,
+                role = role,
+                text = text.trim(),
+                createdAt = createdAt,
+                scopePlatform = scope?.platform?.name,
+                accountId = scope?.accountId,
+                conversationId = scope?.conversationId,
+            )
+        )
         return id
     }
 
