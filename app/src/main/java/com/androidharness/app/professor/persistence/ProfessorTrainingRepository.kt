@@ -19,6 +19,11 @@ class ProfessorTrainingRepository(
     fun lessons(): Flow<List<ProfessorTrainingLessonEntity>> = dao.trainingLessonsFlow()
 
     fun conversationHistory(): Flow<List<ProfessorTrainingTurnEntity>> = dao.trainingTurnsFlow()
+
+    /** Immutable lesson change history; deletion never erases its audit trail. */
+    fun auditHistory(lessonId: String): Flow<List<ProfessorTrainingAuditEntity>> =
+        dao.trainingAuditFlow(lessonId)
+
     /** Bounded, chronological context for the next owner-training turn. */
     suspend fun recentConversationHistory(scope: ConversationScope? = null): List<ProfessorTrainingTurnEntity> =
         dao.recentTrainingTurnsForScope(
@@ -58,10 +63,10 @@ class ProfessorTrainingRepository(
         require(!ProfessorTrainingSecretPolicy.containsSecret(rule)) { "Credential-like content cannot be stored as a lesson" }
         val current = dao.trainingLesson(lessonId) ?: return false
         if (current.state == ProfessorTrainingLessonState.REJECTED.name) return false
-        return dao.editTrainingLesson(lessonId, rule.trim(), now()) == 1
+        return dao.editTrainingLessonWithAudit(lessonId, rule.trim(), now()) == 1
     }
 
-    suspend fun resetAllLessons() = dao.clearTrainingLessons()
+    suspend fun resetAllLessons() = dao.clearTrainingLessonsWithAudit(now())
 
     /** Returns only approved owner rules that are global or match the exact conversation scope. */
     suspend fun approvedLessonsFor(scope: ConversationScope): List<ProfessorTrainingLessonEntity> =
@@ -101,23 +106,23 @@ class ProfessorTrainingRepository(
         require(!ProfessorTrainingSecretPolicy.containsSecret(lesson.rule)) {
             "Credential-like content cannot be activated"
         }
-        return dao.approveTrainingLesson(lessonId, now()) == 1
+        return dao.approveTrainingLessonWithAudit(lessonId, now()) == 1
     }
 
     suspend fun pause(lessonId: String): Boolean =
-        dao.updateTrainingLessonState(lessonId, ProfessorTrainingLessonState.PAUSED.name, now()) == 1
+        dao.updateTrainingLessonStateWithAudit(lessonId, ProfessorTrainingLessonState.PAUSED.name, now()) == 1
 
     suspend fun resume(lessonId: String): Boolean {
         val lesson = dao.trainingLesson(lessonId) ?: return false
         require(lesson.state == ProfessorTrainingLessonState.PAUSED.name) { "Only a paused lesson can be resumed" }
         require(!ProfessorTrainingSecretPolicy.containsSecret(lesson.rule)) { "Credential-like content cannot be activated" }
-        return dao.updateTrainingLessonState(lessonId, ProfessorTrainingLessonState.APPROVED.name, now()) == 1
+        return dao.updateTrainingLessonStateWithAudit(lessonId, ProfessorTrainingLessonState.APPROVED.name, now()) == 1
     }
 
     suspend fun reject(lessonId: String): Boolean =
-        dao.updateTrainingLessonState(lessonId, ProfessorTrainingLessonState.REJECTED.name, now()) == 1
+        dao.updateTrainingLessonStateWithAudit(lessonId, ProfessorTrainingLessonState.REJECTED.name, now()) == 1
 
-    suspend fun delete(lessonId: String) = dao.deleteTrainingLesson(lessonId)
+    suspend fun delete(lessonId: String) = dao.deleteTrainingLessonWithAudit(lessonId, now())
 
     fun scopeOf(lesson: ProfessorTrainingLessonEntity): ConversationScope? {
         val platform = lesson.scopePlatform ?: return null
