@@ -204,6 +204,23 @@ fun ProfessorTrainingChatScreen(
             }
         }
         item {
+            if (auditEvents.isNotEmpty()) {
+                Text("Recent training audit", style = MaterialTheme.typography.titleMedium)
+                auditEvents.take(30).forEach { event ->
+                    Card(Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text("${event.action} · revision ${event.revision}", style = MaterialTheme.typography.labelMedium)
+                            Text("Lesson: ${event.lessonId}", style = MaterialTheme.typography.labelSmall)
+                            if (event.ruleBefore.isNotBlank()) Text(event.ruleBefore, style = MaterialTheme.typography.bodySmall)
+                            if (event.ruleAfter.isNotBlank() && event.ruleAfter != event.ruleBefore) {
+                                Text("→ ${event.ruleAfter}", style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        item {
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("No-send simulation", style = MaterialTheme.typography.titleMedium)

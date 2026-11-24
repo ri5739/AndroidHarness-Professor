@@ -93,7 +93,7 @@ data class ProfessorDraftEntity(@PrimaryKey val draftId:String,val platform:Stri
  @Query("SELECT * FROM professor_training_audit WHERE lessonId=:lessonId ORDER BY occurredAt DESC, auditId DESC")
  fun trainingAuditFlow(lessonId: String): Flow<List<ProfessorTrainingAuditEntity>>
 
- @Query("SELECT * FROM professor_training_audit ORDER BY occurredAt DESC, auditId DESC")
+ @Query("SELECT * FROM professor_training_audit ORDER BY occurredAt DESC, auditId DESC LIMIT 100")
  fun trainingAuditFlowAll(): Flow<List<ProfessorTrainingAuditEntity>>
 
  @Transaction
