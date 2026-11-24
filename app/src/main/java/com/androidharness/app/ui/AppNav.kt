@@ -1007,8 +1007,9 @@ fun AppNav(container: AppContainer) {
                         )
                     }
                 }
-                androidx.compose.runtime.DisposableEffect(Unit) {
-                    val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
+                val trainingLifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+                androidx.compose.runtime.DisposableEffect(trainingLifecycleOwner) {
+                    val lifecycle = trainingLifecycleOwner.lifecycle
                     val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
                         if (event == androidx.lifecycle.Lifecycle.Event.ON_STOP) ownerVerified = false
                     }
