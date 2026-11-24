@@ -211,6 +211,28 @@ class AppContainer(val appContext: Context) {
     /** Phase 1 persistent message/draft store; intentionally scoped to existing Harness Room DB. */
     val professorPersistence by lazy { ProfessorPersistence(db.professorPersistenceDao()) }
     val professorTraining by lazy { com.androidharness.app.professor.persistence.ProfessorTrainingRepository(db.professorPersistenceDao()) }
+    /** Builds a short-lived bridge from the currently selected AndroidHarness provider. */
+    suspend fun createProfessorTrainingCoach(): com.androidharness.app.professor.ProfessorTrainingCoach {
+        val saved = settings.settings.first()
+        val available = providers.providers.first()
+        val selectedId = saved.activeProviderId
+        val selected = available.firstOrNull { it.id == selectedId && it.enabled }
+            ?: available.firstOrNull { it.id == com.androidharness.app.llm.HarnessProvider.ID && it.enabled }
+            ?: available.firstOrNull { it.enabled }
+            ?: error("No enabled AndroidHarness AI provider is configured")
+        val requested = selected.copy(
+            model = if (selected.id == selectedId) saved.activeModel?.takeIf { it.isNotBlank() } ?: selected.model else selected.model,
+        )
+        val resolved = providers.resolveHarnessConfig(requested)
+        val apiKey = if (resolved.id == com.androidharness.app.llm.HarnessProvider.ID) {
+            providers.harnessApiKey(available)
+        } else {
+            resolved.effectiveApiKey(providers.apiKey(resolved.id))
+        }
+        require(apiKey.isNotBlank()) { "The selected AndroidHarness AI provider has no usable API key" }
+        val adapter = com.androidharness.app.professor.ProfessorAiAdapter(routedProvider(), resolved, apiKey)
+        return com.androidharness.app.professor.ProfessorTrainingCoach(adapter, professorTraining)
+    }
     val images = ImageStore(appContext)
     val sessions = SessionRepository(db, images)
     val memory = com.androidharness.app.data.MemoryRepository(db, settings)
