@@ -1042,6 +1042,11 @@ fun AppNav(container: AppContainer) {
                         }
                     }
                 } else {
+                    var trainingAiReady by remember { mutableStateOf(false) }
+                    var trainingSimulationPreview by remember { mutableStateOf<String?>(null) }
+                    androidx.compose.runtime.LaunchedEffect(container) {
+                        trainingAiReady = runCatching { container.createProfessorTrainingCoach() }.isSuccess
+                    }
                     val trainingHistory by container.professorTraining.conversationHistory()
                         .collectAsStateWithLifecycle(initialValue = emptyList())
                     val trainingLessons by container.professorTraining.lessons()
@@ -1049,9 +1054,16 @@ fun AppNav(container: AppContainer) {
                     com.androidharness.app.professor.ui.ProfessorTrainingChatScreen(
                         history = trainingHistory,
                         lessons = trainingLessons,
-                        aiCoreReady = false,
+                        aiCoreReady = trainingAiReady,
                         onTeach = { message ->
-                            android.widget.Toast.makeText(uiContext, "AI Core training connection is not wired yet.", android.widget.Toast.LENGTH_LONG).show()
+                            scope.launch {
+                                runCatching { container.createProfessorTrainingCoach().teach(message) }
+                                    .onSuccess { trainingAiReady = true }
+                                    .onFailure {
+                                        trainingAiReady = false
+                                        android.widget.Toast.makeText(uiContext, it.message ?: "Training request failed", android.widget.Toast.LENGTH_LONG).show()
+                                    }
+                            }
                         },
                         onApprove = { id -> scope.launch { runCatching { container.professorTraining.approve(id) }.onFailure {
                             android.widget.Toast.makeText(uiContext, it.message ?: "Approval failed", android.widget.Toast.LENGTH_LONG).show()
@@ -1062,10 +1074,23 @@ fun AppNav(container: AppContainer) {
                         onPause = { id -> scope.launch { container.professorTraining.pause(id) } },
                         onDelete = { id -> scope.launch { container.professorTraining.delete(id) } },
                         onReset = { scope.launch { container.professorTraining.resetAllLessons() } },
-                        onSimulate = { _, _ ->
-                            android.widget.Toast.makeText(uiContext, "No-send simulation awaits the AI Core runtime bridge.", android.widget.Toast.LENGTH_LONG).show()
+                        onSimulate = { sample, rule ->
+                            scope.launch {
+                                runCatching {
+                                    container.createProfessorTrainingCoach().simulate(
+                                        scope = com.androidharness.app.professor.ConversationScope(
+                                            com.androidharness.app.professor.MessagingPlatform.WHATSAPP_PERSONAL,
+                                            "training-preview",
+                                            "training-preview",
+                                        ),
+                                        sampleIncomingMessage = sample,
+                                        proposedRule = rule,
+                                    )
+                                }.onSuccess { trainingSimulationPreview = it.replyPreview }
+                                    .onFailure { android.widget.Toast.makeText(uiContext, it.message ?: "Simulation failed", android.widget.Toast.LENGTH_LONG).show() }
+                            }
                         },
-                        simulationPreview = null,
+                        simulationPreview = trainingSimulationPreview,
                     )
                 }
             }
