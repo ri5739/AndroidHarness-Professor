@@ -24,12 +24,26 @@ class ProfessorTrainingCoachTest {
 
     @Test fun trainingContextIsBoundedAndFiltersUnknownRolesAndSecrets() {
         val history = (1..40).map { index ->
-            ProfessorTrainingTurnEntity("$index", if (index == 39) "SYSTEM" else "OWNER", "নিয়ম $index", index.toLong())
+            val role = if (index == 39) "SYSTEM" else "OWNER"
+            val text = when (index) {
+                38 -> "password is supersecret123"
+                39 -> "অজানা role-এর নির্দেশনা"
+                else -> "নিয়ম $index"
+            }
+            ProfessorTrainingTurnEntity("$index", role, text, index.toLong())
         }
         val turns = buildTrainingConversationContext(history, "41", "সর্বশেষ নির্দেশনা", maxTurns = 8)
 
         assertEquals(8, turns.size)
         assertEquals("সর্বশেষ নির্দেশনা", turns.last().text)
-        assertTrue(turns.none { it.text == "নিয়ম 39" })
+        assertTrue(turns.none { it.text.contains("অজানা role") })
+        assertTrue(turns.none { it.text.contains("supersecret123") })
+    }
+
+    @Test fun trainingSecretPolicyRejectsCredentialAssignmentsAndPrivateKeys() {
+        assertTrue(ProfessorTrainingSecretPolicy.containsSecret("password is supersecret123"))
+        assertTrue(ProfessorTrainingSecretPolicy.containsSecret("api key: sk-example-value"))
+        assertTrue(ProfessorTrainingSecretPolicy.containsSecret("-----BEGIN PRIVATE KEY-----"))
+        assertTrue(!ProfessorTrainingSecretPolicy.containsSecret("বাংলায় সংক্ষিপ্ত উত্তর দেবে"))
     }
 }

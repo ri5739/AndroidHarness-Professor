@@ -2,6 +2,7 @@ package com.androidharness.app.professor
 
 import com.androidharness.app.professor.persistence.ProfessorTrainingRepository
 import com.androidharness.app.professor.persistence.ProfessorTrainingTurnEntity
+import kotlinx.coroutines.CancellationException
 
 /**
  * Owner-invoked Training Chat workflow. The supplied generator must be AndroidHarness' selected
@@ -38,13 +39,27 @@ class ProfessorTrainingCoach(
             ownerMessage = ownerMessage,
             maxTurns = MAX_TRAINING_CONTEXT_TURNS,
         )
-        val answer = ai.generateReply(prompt, trainingContext).trim()
+        val answer = try {
+            ai.generateReply(prompt, trainingContext).trim()
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            val safeResponse = "AndroidHarness AI Core থেকে এখন উত্তর পাওয়া যাচ্ছে না। আপনার নির্দেশনা history-তে আছে; সংযোগ ঠিক হলে আবার চেষ্টা করুন।"
+            repository.appendTrainingTurn("ASSISTANT", safeResponse, scope)
+            return TrainingCoachResult(answer = safeResponse, rejectedReason = "AI Core generation failed")
+        }
         val result = when {
             answer.startsWith("LESSON:", ignoreCase = true) -> {
                 val rule = answer.substringAfter(':').trim()
-                require(rule.isNotBlank()) { "AI returned an empty lesson proposal" }
-                val id = repository.propose(rule, scope)
-                TrainingCoachResult(answer = "প্রস্তাবিত lesson তৈরি হয়েছে। অনুমোদনের আগে এটি কার্যকর হবে না।", proposedLessonId = id)
+                if (rule.isBlank() || ProfessorTrainingSecretPolicy.containsSecret(rule)) {
+                    TrainingCoachResult(
+                        answer = "AI response-এ ফাঁকা বা credential-সদৃশ rule পাওয়া গেছে; নিরাপত্তার জন্য lesson তৈরি করা হয়নি।",
+                        rejectedReason = "Unsafe or empty lesson proposal",
+                    )
+                } else {
+                    val id = repository.propose(rule, scope)
+                    TrainingCoachResult(answer = "প্রস্তাবিত lesson তৈরি হয়েছে। অনুমোদনের আগে এটি কার্যকর হবে না।", proposedLessonId = id)
+                }
             }
             answer.startsWith("NO_LESSON:", ignoreCase = true) ->
                 TrainingCoachResult(answer = answer.substringAfter(':').trim().ifBlank { "কোনো স্থায়ী lesson প্রস্তাব করা হয়নি।" })
@@ -73,10 +88,21 @@ class ProfessorTrainingCoach(
             append("Never disclose secrets or confidential owner data. ")
             if (rules.isNotBlank()) append("\nOwner-approved matching lessons and optional proposed rule:\n").append(rules)
         }
-        val generated = ai.generateReply(
-            prompt,
-            listOf(ProfessorConversationTurn(ProfessorTurnRole.USER, sampleIncomingMessage)),
-        )
+        val generated = try {
+            ai.generateReply(
+                prompt,
+                listOf(ProfessorConversationTurn(ProfessorTurnRole.USER, sampleIncomingMessage)),
+            )
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            return TrainingSimulation(
+                sampleMessage = sampleIncomingMessage,
+                replyPreview = "AndroidHarness AI Core থেকে preview তৈরি করা যায়নি। সংযোগ ঠিক হলে আবার চেষ্টা করুন।",
+                requiresOwnerApproval = true,
+                sentExternally = false,
+            )
+        }
         val privacy = ProfessorOutgoingReplyPolicy.assess(generated)
         val safePreview = if (privacy.decision == OutgoingReplyDecision.OWNER_APPROVAL_REQUIRED) {
             ProfessorOutgoingReplyPolicy.safeReplyForApprovalRequired(privacy)

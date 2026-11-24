@@ -13,6 +13,13 @@ class ProfessorTrainingConflictsTest {
         assertTrue(conflicts.single().overlappingTerms.contains("bengali"))
     }
 
+    @Test fun detectsBengaliNegationConflicts() {
+        val conflicts = ProfessorTrainingConflictDetector.findConflicts(
+            listOf("সবসময় বাংলায় উত্তর দেবে", "বাংলায় উত্তর দেবে না"),
+        )
+        assertEquals(1, conflicts.size)
+    }
+
     @Test fun doesNotFlagDifferentSubjectsAsConflict() {
         assertTrue(
             ProfessorTrainingConflictDetector.findConflicts(
