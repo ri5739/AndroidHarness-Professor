@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -25,6 +26,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.androidharness.app.AppContainer
 import com.androidharness.app.professor.DraftStatus
+import com.androidharness.app.professor.MessagingPlatform
+import com.androidharness.app.professor.ProfessorPlatformPreferences
 import kotlinx.coroutines.launch
 
 @Composable
@@ -63,6 +66,9 @@ fun ProfessorControlScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
+    var platformStates by remember {
+        mutableStateOf(MessagingPlatform.entries.associateWith { ProfessorPlatformPreferences.isCaptureEnabled(context, it) })
+    }
     val drafts by container.professorPersistence.activeDraftsFlow()
         .collectAsStateWithLifecycle(initialValue = emptyList())
 
@@ -85,6 +91,28 @@ fun ProfessorControlScreen(
                 }
             },
         )
+        Text("Platform connections", style = MaterialTheme.typography.titleLarge)
+        Text(
+            "Turn on notification capture separately for each messaging app you have connected. " +
+                "This only reads supported notifications and prepares drafts; it does not send replies.",
+            style = MaterialTheme.typography.bodySmall,
+        )
+        MessagingPlatform.entries.forEach { platform ->
+            androidx.compose.foundation.layout.Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+            ) {
+                Text(platform.displayName(), modifier = Modifier.weight(1f))
+                Switch(
+                    checked = platformStates[platform] == true,
+                    onCheckedChange = { enabled ->
+                        ProfessorPlatformPreferences.setCaptureEnabled(context, platform, enabled)
+                        platformStates = platformStates + (platform to enabled)
+                    },
+                )
+            }
+        }
         Text("Reply drafts", style = MaterialTheme.typography.titleLarge)
         ProfessorDraftManagement(
             drafts = drafts,
@@ -106,4 +134,12 @@ fun ProfessorControlScreen(
             modifier = Modifier.weight(1f),
         )
     }
+}
+
+private fun MessagingPlatform.displayName(): String = when (this) {
+    MessagingPlatform.WHATSAPP_PERSONAL -> "WhatsApp"
+    MessagingPlatform.WHATSAPP_BUSINESS -> "WhatsApp Business"
+    MessagingPlatform.MESSENGER_PERSONAL -> "Messenger"
+    MessagingPlatform.META_BUSINESS_MESSENGER -> "Meta Business Suite"
+    MessagingPlatform.INSTAGRAM_DM -> "Instagram"
 }
