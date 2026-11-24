@@ -990,6 +990,13 @@ fun AppNav(container: AppContainer) {
                 }
             }
 
+            composable("professor-control") {
+                com.androidharness.app.professor.ui.ProfessorControlScreen(
+                    container = container,
+                    onBack = { nav.popBackStack() },
+                )
+            }
+
             composable("professor-training") {
                 var ownerVerified by remember { mutableStateOf(false) }
                 var authUnavailable by remember { mutableStateOf(false) }
@@ -1134,6 +1141,7 @@ fun AppNav(container: AppContainer) {
                     onOpenSkills = { nav.navigate("skills") },
                     onOpenProviders = { nav.navigate("providers") },
                     onOpenTrainingChat = { nav.navigate("professor-training") { launchSingleTop = true } },
+                    onOpenProfessorControl = { nav.navigate("professor-control") { launchSingleTop = true } },
                     onOpenLearnDestination = { destination ->
                         when (destination) {
                             com.androidharness.app.ui.learn.LearnDestination.CHAT -> openChat(null, kind = com.androidharness.app.data.ConversationKind.CHAT)
