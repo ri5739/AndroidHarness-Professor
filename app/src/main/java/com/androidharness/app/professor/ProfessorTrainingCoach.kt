@@ -85,7 +85,7 @@ class ProfessorTrainingCoach(
         val lessons = repository.approvedLessonsFor(scope).map { it.rule } +
             listOfNotNull(proposedRule?.takeIf { it.isNotBlank() && !ProfessorTrainingSecretPolicy.containsSecret(it) })
         val rules = lessons.joinToString("\n") { "- " + it }
-        val prompt = ProfessorLanguagePolicy.appendTrainingInstructions(buildString {
+        val prompt = ProfessorLanguagePolicy.appendInstructions(buildString {
             append("Prepare a reply draft for this sample message. This is a NO-SEND simulation. ")
             append("Do not call tools, platform adapters, or send anything. ")
             append("Never disclose secrets or confidential owner data. ")
