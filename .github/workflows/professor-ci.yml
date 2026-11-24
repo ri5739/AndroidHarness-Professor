@@ -89,6 +89,18 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: Configure Android SDK
+        run: |
+          echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> "$GITHUB_ENV"
+      - name: Install native toolchain
+        run: |
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)"
+          yes | "$SDKMANAGER" --licenses || true
+          "$SDKMANAGER" "ndk;27.2.12479018" "cmake;3.22.1"
+          sudo apt-get update
+          sudo apt-get install -y glslc
+          glslc --version
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
       - name: Run Android migration and persistence tests
