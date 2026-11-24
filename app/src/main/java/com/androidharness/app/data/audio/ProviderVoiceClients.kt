@@ -231,6 +231,8 @@ object AssemblyAiClient {
             val payload = buildJsonObject {
                 put("audio_url", uploadUrl)
                 if (model.isNotBlank() && model != "universal") put("speech_model", model)
+                // Universal-2 can automatically detect supported spoken languages.
+                put("language_detection", true)
             }.toString()
             val jobId = execute(
                 Request.Builder()

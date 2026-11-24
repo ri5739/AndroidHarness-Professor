@@ -107,7 +107,8 @@ object DeepgramVoiceClient {
     ): Result<String> = withContext(Dispatchers.IO) {
         if (apiKey.isBlank()) return@withContext Result.failure(IllegalStateException("Deepgram API key is missing"))
         val chosen = model.ifBlank { "nova-3" }
-        val url = "${baseUrl.trimEnd('/')}/listen?model=$chosen&smart_format=true&punctuate=true"
+        val languageQuery = multilingualLanguageParameter(chosen)
+        val url = "${baseUrl.trimEnd('/')}/listen?model=$chosen&smart_format=true&punctuate=true$languageQuery"
         val request = Request.Builder()
             .url(url)
             .header("Authorization", "Token ${apiKey.trim()}")
@@ -170,6 +171,11 @@ object DeepgramVoiceClient {
             Result.failure(e)
         }
     }
+
+    internal fun multilingualLanguageParameter(model: String): String =
+        if (model.startsWith("nova-3", ignoreCase = true) || model.startsWith("nova-2", ignoreCase = true)) {
+            "&language=multi"
+        } else ""
 
     private suspend fun execute(request: Request): Response = suspendCancellableCoroutine { continuation ->
         val call = httpClient.newCall(request)
