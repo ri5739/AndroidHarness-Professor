@@ -28,7 +28,7 @@ class ProfessorOrchestratorTest {
         }
     }
 
-    @Test fun successfulProcessingSavesReviewDraftAndCompletesQueue() = runBlocking {
+    @Test fun successfulOrdinaryProcessingPreparesAutomaticReplyAndCompletesQueue() = runBlocking {
         val store = FakeStore(incoming())
         var receivedPrompt = ""
         val generator = ProfessorReplyGenerator { prompt, _ -> receivedPrompt = prompt; "Hello back" }
@@ -42,9 +42,9 @@ class ProfessorOrchestratorTest {
         assertEquals("Hello back", draft!!.text)
         assertTrue(receivedPrompt.contains("ALWAYS write the initial reply in Bengali"))
         assertTrue(receivedPrompt.contains("conversation-scoped preference"))
-        assertEquals(DraftStatus.NEEDS_REVIEW, draft.status)
-        assertTrue(draft.riskFlags.contains(RiskFlag.LOW_CONFIDENCE))
-        assertEquals(ProfessorOrchestrator.REVIEW_ONLY_CONFIDENCE, draft.confidence)
+        assertEquals(DraftStatus.PENDING, draft.status)
+        assertTrue(draft.riskFlags.isEmpty())
+        assertEquals(1.0f, draft.confidence)
         assertEquals(1, store.drafts.size)
         assertEquals(listOf("m1"), store.completed)
         assertTrue(store.retries.isEmpty())
@@ -70,7 +70,7 @@ class ProfessorOrchestratorTest {
         val draft = orchestrator.processOne(scope)
         assertNotNull(draft)
         assertTrue(draft!!.riskFlags.contains(RiskFlag.PHISHING))
-        assertTrue(draft.riskFlags.contains(RiskFlag.LOW_CONFIDENCE))
+        assertFalse(draft.riskFlags.contains(RiskFlag.LOW_CONFIDENCE))
     }
 
 
