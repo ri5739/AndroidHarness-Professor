@@ -63,8 +63,6 @@ class ProfessorWorker(context: Context, params: WorkerParameters) : CoroutineWor
                 },
             )
 
-            // Drain a bounded number per run. A missing/unsupported RemoteInput action
-            // leaves an ordinary reply in the persisted inbox rather than pretending it sent.
             repeat(MAX_MESSAGES_PER_RUN) {
                 if (isStopped) return Result.success()
                 val draft = orchestrator.processOne(scope)
@@ -83,14 +81,13 @@ class ProfessorWorker(context: Context, params: WorkerParameters) : CoroutineWor
                     }
                     RiskFlag.SENSITIVE_DATA in draft.riskFlags -> {
                         val assessment = ProfessorOutgoingReplyPolicy.assess(draft.text)
-                        val safeAcknowledgement = ProfessorOutgoingReplyPolicy.safeReplyForApprovalRequired(assessment)
-                        if (!safeAcknowledgement.isNullOrBlank()) {
-                            // Only the safe acknowledgement is sent. The proposed disclosure
-                            // remains in NEEDS_REVIEW for the owner's explicit decision.
-                            ProfessorNotificationReplyActions.send(
-                                applicationContext, draft.inReplyToMessageId, safeAcknowledgement,
-                            )
-                        }
+                        val safeAcknowledgement =
+                            ProfessorOutgoingReplyPolicy.safeReplyForApprovalRequired(assessment)
+                                ?: ProfessorPrivateRequestClassifier.SAFE_ACKNOWLEDGEMENT
+                        // Only a safe acknowledgement is sent. The private reply remains held.
+                        ProfessorNotificationReplyActions.send(
+                            applicationContext, draft.inReplyToMessageId, safeAcknowledgement,
+                        )
                     }
                 }
             }
