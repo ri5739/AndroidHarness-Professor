@@ -73,7 +73,8 @@ class ProfessorTrainingCoach(
         )
         val privacy = ProfessorOutgoingReplyPolicy.assess(generated)
         val safePreview = if (privacy.decision == OutgoingReplyDecision.OWNER_APPROVAL_REQUIRED) {
-            privacy.safeAcknowledgement
+            ProfessorOutgoingReplyPolicy.safeReplyForApprovalRequired(privacy)
+                ?: "এই উত্তরটিতে ব্যক্তিগত তথ্য থাকতে পারে। মালিকের অনুমতি ছাড়া তা প্রকাশ করা হবে না।"
         } else generated
         return TrainingSimulation(
             sampleMessage = sampleIncomingMessage,
