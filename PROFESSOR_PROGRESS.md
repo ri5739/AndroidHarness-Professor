@@ -133,3 +133,12 @@ Latest verified CI remains run #89 at `abb3095b637276208683d88bfbc881ef6fe1faf2`
 - Credential-like rules are rejected both when proposed and immediately before approval. New lessons remain `PROPOSED`; there is no implicit activation.
 - Exposed the repository from `AppContainer`.
 - This is a persistence/domain foundation only. A dedicated Training Chat screen, AndroidHarness AI Core lesson extraction, owner-only navigation/authorization, and end-to-end tests remain pending. No external sender can write lessons through this repository API.
+
+
+## Owner-only Training Chat access hardening — 2026-11-24
+- [x] Added a device-owner authentication gate before the Training Chat route exposes private training history or lessons. It uses AndroidHarness' existing biometric/device-credential helper; no parallel authentication mechanism was introduced.
+- [x] Authentication fails closed when no supported secure device authentication is configured or the host activity is unavailable.
+- [x] The verified state is cleared when the app moves to the background (ON_STOP) and when the route is disposed.
+- [ ] CI verification for this UI change is pending.
+- [ ] This is an in-app route gate, not a claim of server-grade identity or repository-level authorization. Continue hardening any alternate access paths before release.
+- [ ] Training Chat AI lesson extraction and no-send simulation are still disabled in the UI until the real AndroidHarness AI Core runtime bridge is connected.
