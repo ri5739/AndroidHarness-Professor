@@ -78,7 +78,10 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  # GitHub-hosted runners may not expose a working nested KVM device.
+  # Keep emulator tests opt-in; JVM tests and APK build remain required on every push.
   instrumentation-tests:
+    if: ${{ vars.ENABLE_ANDROID_EMULATOR_TESTS == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
