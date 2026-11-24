@@ -135,6 +135,7 @@ fun ProfessorTrainingChatScreen(
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(10.dp)) {
                     Text(if (turn.role == "OWNER") "আপনি" else "Training Assistant", style = MaterialTheme.typography.labelMedium)
+                    Text(if (turn.scopePlatform == null) "Global training" else "${turn.scopePlatform} / ${turn.accountId} / ${turn.conversationId}", style = MaterialTheme.typography.labelSmall)
                     Text(turn.text)
                 }
             }
