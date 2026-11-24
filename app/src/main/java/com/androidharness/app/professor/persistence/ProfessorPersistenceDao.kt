@@ -15,7 +15,7 @@ data class ProfessorTrainingLessonEntity(
     val createdAt: Long,
     val updatedAt: Long,
     val approvedAt: Long? = null,
-    val revision: Int = 1,
+    @ColumnInfo(defaultValue = "1") val revision: Int = 1,
 )
 
 @Entity(tableName = "professor_training_turns", indices = [Index("createdAt")])
