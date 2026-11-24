@@ -28,7 +28,6 @@ import com.androidharness.app.AppContainer
 import com.androidharness.app.professor.DraftStatus
 import com.androidharness.app.professor.MessagingPlatform
 import com.androidharness.app.professor.ProfessorPlatformPreferences
-import com.androidharness.app.professor.capture.ProfessorNotificationReplyActions
 import kotlinx.coroutines.launch
 
 @Composable
@@ -78,7 +77,7 @@ fun ProfessorControlScreen(
         androidx.compose.material3.TextButton(onClick = onBack) { Text("Back") }
         Text("Agent Professor", style = MaterialTheme.typography.headlineMedium)
         Text(
-            "Ordinary messages are replied to automatically when the messaging app exposes a supported notification reply action. Personal or confidential replies wait for your approval.",
+            "Incoming notifications can be captured when enabled. Replies are generated as drafts; external sending remains disabled until platform adapters and safety verification are complete.",
             style = MaterialTheme.typography.bodyMedium,
         )
         ProfessorNotificationPermissionPanel(
@@ -91,7 +90,7 @@ fun ProfessorControlScreen(
         )
         Text("Platform connections", style = MaterialTheme.typography.titleLarge)
         Text(
-            "Enable notification capture separately for each messaging app. Automatic sending requires that app to expose an inline reply action in its notification.",
+            "These switches only control incoming notification capture. They do not connect an account or enable sending.",
             style = MaterialTheme.typography.bodySmall,
         )
         MessagingPlatform.entries.forEach { platform ->
@@ -121,16 +120,6 @@ fun ProfessorControlScreen(
             onMarkReviewed = { draft ->
                 coroutineScope.launch {
                     container.professorPersistence.setDraftStatus(draft.draftId, DraftStatus.READY)
-                }
-            },
-            onApproveAndSend = { draft ->
-                coroutineScope.launch {
-                    val sent = ProfessorNotificationReplyActions.send(
-                        context, draft.inReplyToMessageId, draft.text,
-                    )
-                    if (sent) {
-                        container.professorPersistence.setDraftStatus(draft.draftId, DraftStatus.SENT)
-                    }
                 }
             },
             onDelete = { draft ->
