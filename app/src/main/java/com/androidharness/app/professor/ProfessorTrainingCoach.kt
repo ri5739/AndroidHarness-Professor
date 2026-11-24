@@ -22,7 +22,7 @@ class ProfessorTrainingCoach(
             return TrainingCoachResult(answer = safeResponse, rejectedReason = "Secret-like input rejected before history persistence")
         }
         val ownerTurnId = repository.appendTrainingTurn("OWNER", ownerMessage, scope)
-        val prompt = ProfessorLanguagePolicy.appendInstructions("""
+        val prompt = ProfessorLanguagePolicy.appendTrainingInstructions("""
             You are the owner's private Agent Professor training assistant.
             Understand owner instructions written in any language, including text transcribed from voice messages.
             Respond to the owner in Bengali by default. If the owner explicitly asks for another output language,
@@ -85,7 +85,7 @@ class ProfessorTrainingCoach(
         val lessons = repository.approvedLessonsFor(scope).map { it.rule } +
             listOfNotNull(proposedRule?.takeIf { it.isNotBlank() && !ProfessorTrainingSecretPolicy.containsSecret(it) })
         val rules = lessons.joinToString("\n") { "- " + it }
-        val prompt = ProfessorLanguagePolicy.appendInstructions(buildString {
+        val prompt = ProfessorLanguagePolicy.appendTrainingInstructions(buildString {
             append("Prepare a reply draft for this sample message. This is a NO-SEND simulation. ")
             append("Do not call tools, platform adapters, or send anything. ")
             append("Never disclose secrets or confidential owner data. ")
