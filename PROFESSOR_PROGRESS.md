@@ -142,3 +142,29 @@ Latest verified CI remains run #89 at `abb3095b637276208683d88bfbc881ef6fe1faf2`
 - [ ] CI verification for this UI change is pending.
 - [ ] This is an in-app route gate, not a claim of server-grade identity or repository-level authorization. Continue hardening any alternate access paths before release.
 - [ ] Training Chat AI lesson extraction and no-send simulation are still disabled in the UI until the real AndroidHarness AI Core runtime bridge is connected.
+
+
+## Owner-directed implementation continuation — 2026-11-24
+The owner asked to prioritize implementation and APK delivery; device/emulator testing will be performed by the owner after installation. Do not block APK creation on hosted emulator availability.
+
+### Integrated Professor controls increment
+- [x] Added a dedicated Agent Professor Controls & Drafts screen and Settings entry point.
+- [x] Added live refresh of Android Notification Listener access status when returning from system settings.
+- [x] Added independent opt-in capture switches for WhatsApp, WhatsApp Business, Messenger, Meta Business Suite, and Instagram.
+- [x] Enforced each platform switch in `ProfessorNotificationListener` before any notification is persisted or queued.
+- [x] Wired active persisted drafts to edit, mark-reviewed, and delete operations.
+- [ ] Owner device installation and platform-by-platform verification remain pending.
+- [ ] Platform-specific outgoing send adapters are not implemented; this screen only enables notification capture and review-only draft generation.
+- [ ] Contact memory, account/contact mapping UI, full audit/settings integration, attachment extraction, and Option C revision behavior remain separate implementation tasks.
+
+Commits for this increment:
+- `a3672609` — integrated draft and notification controls screen.
+- `c3f02744` — Settings entry point.
+- `d578a021` — navigation wiring.
+- `223d68a9` — lifecycle-scoped draft actions.
+- `a8d192ae` — per-platform capture preferences.
+- `9ce54a46` — enforce capture switches in notification listener.
+- `03b1c5c9` — platform switches in controls UI.
+- `c9ad1694` — layout import correction.
+
+APK build is being generated from the latest branch head; no claim of successful artifact creation until the workflow publishes it.
